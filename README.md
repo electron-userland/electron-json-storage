@@ -82,18 +82,14 @@ storage.get('foobar', function(error, data) {
 ```js
 const storage = require('electron-json-storage');
 
-storage.set('foobar', { foo: 'bar' }).then(function(data) {
-  console.log(data);
-});
+storage.set('foobar', { foo: 'bar' });
 ```
 **Example**  
 ```js
 const storage = require('electron-json-storage');
 
-storage.set('foobar', { foo: 'bar' }, function(error, data) {
+storage.set('foobar', { foo: 'bar' }, function(error) {
   if (error) throw error;
-
-  console.log(data);
 });
 ```
 <a name="module_storage.has"></a>
