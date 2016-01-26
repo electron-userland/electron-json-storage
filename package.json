@@ -1,0 +1,41 @@
+{
+  "name": "electron-json-storage",
+  "version": "1.0.0",
+  "description": "Easily write and read user settings in Electron apps",
+  "main": "lib/storage.js",
+  "homepage": "https://github.com/jviotti/electron-json-storage",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jviotti/electron-json-storage.git"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "electron-mocha --recursive tests -R progress",
+    "lint": "jshint --config .jshintrc --reporter unix lib tests",
+    "readme": "jsdoc2md --template doc/README.hbs lib/storage.js > README.md"
+  },
+  "keywords": [
+    "electron",
+    "json",
+    "storage",
+    "user",
+    "app",
+    "data"
+  ],
+  "author": "Juan Cruz Viotti <jviottidc@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "electron-mocha": "^0.8.0",
+    "electron-prebuilt": "^0.36.5",
+    "jsdoc-to-markdown": "^1.1.1",
+    "jshint": "^2.9.1",
+    "mochainon": "^1.0.0"
+  },
+  "dependencies": {
+    "bluebird": "^3.1.4",
+    "lodash": "^4.0.1",
+    "rimraf": "^2.5.1"
+  }
+}
