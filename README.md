@@ -37,6 +37,7 @@ Documentation
     * [.get(key)](#module_storage.get) ⇒ <code>Promise</code>
     * [.set(key, json)](#module_storage.set) ⇒ <code>Promise</code>
     * [.has(key)](#module_storage.has) ⇒ <code>Promise</code>
+    * [.keys()](#module_storage.keys) ⇒ <code>Promise</code>
     * [.remove(key)](#module_storage.remove) ⇒ <code>Promise</code>
     * [.clear()](#module_storage.clear) ⇒ <code>Promise</code>
 
@@ -132,6 +133,34 @@ storage.has('foobar', function(error, data) {
 
   if (hasKey) {
     console.log('There is data stored as `foobar`');
+  }
+});
+```
+<a name="module_storage.keys"></a>
+### storage.keys() ⇒ <code>Promise</code>
+**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Summary**: Get the list of saved keys  
+**Access:** public  
+**Fulfil**: <code>String[]</code> - saved keys  
+**Example**  
+```js
+const storage = require('electron-json-storage');
+
+storage.keys().then(function(keys) {
+  for (var key of keys) {
+    console.log('There is a key called: ' + key);
+  }
+});
+```
+**Example**  
+```js
+const storage = require('electron-json-storage');
+
+storage.keys(function(error, keys) {
+  if (error) throw error;
+
+  for (var key of keys) {
+    console.log('There is a key called: ' + key);
   }
 });
 ```

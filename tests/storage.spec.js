@@ -207,6 +207,51 @@ describe('Electron JSON Storage', function() {
 
   });
 
+  describe('.keys()', function() {
+
+    it('should return an empty array if no keys', function() {
+      const promise = storage.keys();
+      m.chai.expect(promise).to.become([]);
+    });
+
+    it('should return a single key if there is one saved setting', function(done) {
+      storage.set('foo', 'bar').then(function() {
+        const promise = storage.keys();
+        m.chai.expect(promise).to.become([ 'foo' ]);
+      }).nodeify(done);
+    });
+
+    it('should ignore the .json extension', function(done) {
+      storage.set('foo.json', 'bar').then(function() {
+        const promise = storage.keys();
+        m.chai.expect(promise).to.become([ 'foo' ]);
+      }).nodeify(done);
+    });
+
+    it('should only remove the .json extension', function(done) {
+      storage.set('foo.data', 'bar').then(function() {
+        const promise = storage.keys();
+        m.chai.expect(promise).to.become([ 'foo.data' ]);
+      }).nodeify(done);
+    });
+
+    it('should detect multiple saved settings', function(done) {
+      return Bluebird.all([
+        storage.set('one', 'foo'),
+        storage.set('two', 'bar'),
+        storage.set('three', 'baz')
+      ]).then(function() {
+        const promise = storage.keys();
+        m.chai.expect(promise).to.become([
+          'one',
+          'three',
+          'two'
+        ]);
+      }).nodeify(done);
+    });
+
+  });
+
   describe('.remove()', function() {
 
     it('should be rejected if no key', function() {
