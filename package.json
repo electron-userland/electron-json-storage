@@ -12,7 +12,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "electron-mocha --recursive tests -R progress",
+    "test": "electron-mocha --recursive tests -R progress && electron-mocha --renderer --recursive tests -R progress",
     "lint": "jshint --config .jshintrc --reporter unix lib tests",
     "readme": "jsdoc2md --template doc/README.hbs lib/storage.js > README.md"
   },
