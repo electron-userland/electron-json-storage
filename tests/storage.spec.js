@@ -26,6 +26,7 @@
 
 const m = require('mochainon');
 const _ = require('lodash');
+const async = require('async');
 const fs = require('fs');
 const storage = require('../lib/storage');
 const utils = require('../lib/utils');
@@ -156,26 +157,32 @@ describe('Electron JSON Storage', function() {
     });
 
     it('should be able to store a valid JSON object', function(done) {
-      storage.set('foo', { foo: 'baz' }, function(error) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo', { foo: 'baz' }, callback);
+        },
+        function(callback) {
+          storage.get('foo', callback);
+        }
+      ], function(error, data) {
         m.chai.expect(error).to.not.exist;
-
-        storage.get('foo', function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({ foo: 'baz' });
-          done();
-        });
+        m.chai.expect(data).to.deep.equal({ foo: 'baz' });
+        done();
       });
     });
 
     it('should ignore an explicit json extension', function(done) {
-      storage.set('foo.json', { foo: 'baz' }, function(error) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo.json', { foo: 'baz' }, callback);
+        },
+        function(callback) {
+          storage.get('foo', callback);
+        }
+      ], function(error, data) {
         m.chai.expect(error).to.not.exist;
-
-        storage.get('foo', function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({ foo: 'baz' });
-          done();
-        });
+        m.chai.expect(data).to.deep.equal({ foo: 'baz' });
+        done();
       });
     });
 
@@ -186,19 +193,21 @@ describe('Electron JSON Storage', function() {
       });
 
       it('should be able to override the stored key', function(done) {
-        storage.get('foo', function(error, data) {
+        async.waterfall([
+          function(callback) {
+            storage.get('foo', callback);
+          },
+          function(data, callback) {
+            m.chai.expect(data).to.deep.equal({ foo: 'bar' });
+            storage.set('foo', { foo: 'baz' }, callback);
+          },
+          function(callback) {
+            storage.get('foo', callback);
+          }
+        ], function(error, data) {
           m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({ foo: 'bar' });
-
-          storage.set('foo', { foo: 'baz' }, function(error) {
-            m.chai.expect(error).to.not.exist;
-
-            storage.get('foo', function(error, data) {
-              m.chai.expect(error).to.not.exist;
-              m.chai.expect(data).to.deep.equal({ foo: 'baz' });
-              done();
-            });
-          });
+          m.chai.expect(data).to.deep.equal({ foo: 'baz' });
+          done();
         });
       });
 
@@ -292,62 +301,64 @@ describe('Electron JSON Storage', function() {
     });
 
     it('should yield a single key if there is one saved setting', function(done) {
-      storage.set('foo', 'bar', function(error) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo', 'bar', callback);
+        },
+        storage.keys,
+      ], function(error, keys) {
         m.chai.expect(error).to.not.exist;
-
-        storage.keys(function(error, keys) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(keys).to.deep.equal([ 'foo' ]);
-          done();
-        });
+        m.chai.expect(keys).to.deep.equal([ 'foo' ]);
+        done();
       });
     });
 
     it('should ignore the .json extension', function(done) {
-      storage.set('foo.json', 'bar', function(error) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo.json', 'bar', callback);
+        },
+        storage.keys,
+      ], function(error, keys) {
         m.chai.expect(error).to.not.exist;
-
-        storage.keys(function(error, keys) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(keys).to.deep.equal([ 'foo' ]);
-          done();
-        });
+        m.chai.expect(keys).to.deep.equal([ 'foo' ]);
+        done();
       });
     });
 
     it('should only remove the .json extension', function(done) {
-      storage.set('foo.data', 'bar', function(error) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo.data', 'bar', callback);
+        },
+        storage.keys,
+      ], function(error, keys) {
         m.chai.expect(error).to.not.exist;
-
-        storage.keys(function(error, keys) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(keys).to.deep.equal([ 'foo.data' ]);
-          done();
-        });
+        m.chai.expect(keys).to.deep.equal([ 'foo.data' ]);
+        done();
       });
     });
 
     it('should detect multiple saved settings', function(done) {
-      storage.set('one', 'foo', function(error) {
+      async.waterfall([
+        function(callback) {
+          async.parallel([
+            _.partial(storage.set, 'one', 'foo'),
+            _.partial(storage.set, 'two', 'bar'),
+            _.partial(storage.set, 'three', 'baz')
+          ], callback);
+        },
+        function(result, callback) {
+          storage.keys(callback);
+        }
+      ], function(error, keys) {
         m.chai.expect(error).to.not.exist;
-
-        storage.set('two', 'bar', function(error) {
-          m.chai.expect(error).to.not.exist;
-
-          storage.set('three', 'baz', function(error) {
-            m.chai.expect(error).to.not.exist;
-
-            storage.keys(function(error, keys) {
-              m.chai.expect(error).to.not.exist;
-              m.chai.expect(keys).to.deep.equal([
-                'one',
-                'three',
-                'two'
-              ]);
-              done();
-            });
-          });
-        });
+        m.chai.expect(keys).to.deep.equal([
+          'one',
+          'three',
+          'two'
+        ]);
+        done();
       });
     });
 
@@ -386,36 +397,40 @@ describe('Electron JSON Storage', function() {
       });
 
       it('should be able to remove the key', function(done) {
-        storage.has('foo', function(error, hasKey) {
+        async.waterfall([
+          function(callback) {
+            storage.has('foo', callback);
+          },
+          function(hasKey, callback) {
+            m.chai.expect(hasKey).to.be.true;
+            storage.remove('foo', callback);
+          },
+          function(callback) {
+            storage.has('foo', callback);
+          }
+        ], function(error, hasKey) {
           m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.be.true;
-
-          storage.remove('foo', function(error) {
-            m.chai.expect(error).to.not.exist;
-
-            storage.has('foo', function(error, hasKey) {
-              m.chai.expect(error).to.not.exist;
-              m.chai.expect(hasKey).to.be.false;
-              done()
-            });
-          });
+          m.chai.expect(hasKey).to.be.false;
+          done();
         });
       });
 
       it('should do nothing if the key does not exist', function(done) {
-        storage.has('bar', function(error, hasKey) {
+        async.waterfall([
+          function(callback) {
+            storage.has('bar', callback);
+          },
+          function(hasKey, callback) {
+            m.chai.expect(hasKey).to.be.false;
+            storage.remove('bar', callback);
+          },
+          function(callback) {
+            storage.has('bar', callback);
+          }
+        ], function(error, hasKey) {
           m.chai.expect(error).to.not.exist;
           m.chai.expect(hasKey).to.be.false;
-
-          storage.remove('bar', function(error) {
-            m.chai.expect(error).to.not.exist;
-
-            storage.has('bar', function(error, hasKey) {
-              m.chai.expect(error).to.not.exist;
-              m.chai.expect(hasKey).to.be.false;
-              done()
-            });
-          });
+          done();
         });
       });
 
@@ -439,19 +454,21 @@ describe('Electron JSON Storage', function() {
       });
 
       it('should clear the key', function(done) {
-        storage.has('foo', function(error, hasKey) {
+        async.waterfall([
+          function(callback) {
+            storage.has('foo', callback);
+          },
+          function(hasKey, callback) {
+            m.chai.expect(hasKey).to.be.true;
+            storage.clear(callback);
+          },
+          function(callback) {
+            storage.has('foo', callback);
+          }
+        ], function(error, hasKey) {
           m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.be.true;
-
-          storage.clear(function(error) {
-            m.chai.expect(error).to.not.exist;
-
-            storage.has('foo', function(error, hasKey) {
-              m.chai.expect(error).to.not.exist;
-              m.chai.expect(hasKey).to.be.false;
-              done()
-            });
-          });
+          m.chai.expect(hasKey).to.be.false;
+          done();
         });
       });
 
@@ -472,19 +489,17 @@ describe('Electron JSON Storage', function() {
 
         const userDataPath = utils.getUserDataPath();
 
-        isDirectory(userDataPath, function(error, exists) {
+        async.waterfall([
+          _.partial(isDirectory, userDataPath),
+          function(directory, callback) {
+            m.chai.expect(directory).to.be.true;
+            storage.clear(callback);
+          },
+          _.partial(isDirectory, userDataPath)
+        ], function(error, directory) {
           m.chai.expect(error).to.not.exist;
-          m.chai.expect(exists).to.be.true;
-
-          storage.clear(function(error) {
-            m.chai.expect(error).to.not.exist;
-
-            isDirectory(userDataPath, function(error, exists) {
-              m.chai.expect(error).to.not.exist;
-              m.chai.expect(exists).to.be.true;
-              done();
-            });
-          });
+          m.chai.expect(directory).to.be.true;
+          done();
         });
       });
 
@@ -493,61 +508,42 @@ describe('Electron JSON Storage', function() {
     describe('given many stored keys', function() {
 
       beforeEach(function(done) {
-        storage.set('foo', { name: 'foo' }, function(error) {
-          if (error) {
-            return done(error);
-          }
-
-          storage.set('bar', { name: 'bar' }, function(error) {
-            if (error) {
-              return done(error);
-            }
-
-            storage.set('baz', { name: 'baz' }, function(error) {
-              if (error) {
-                return done(error);
-              }
-
-              done();
-            });
-          });
-        });
+        async.parallel([
+          _.partial(storage.set, 'foo', { name: 'foo' }),
+          _.partial(storage.set, 'bar', { name: 'bar' }),
+          _.partial(storage.set, 'baz', { name: 'baz' })
+        ], done);
       });
 
       it('should clear all stored keys', function(done) {
-        storage.has('foo', function(error, hasKey) {
+        async.waterfall([
+          function(callback) {
+            async.parallel({
+              foo: _.partial(storage.has, 'foo'),
+              bar: _.partial(storage.has, 'bar'),
+              baz: _.partial(storage.has, 'baz')
+            }, callback);
+          },
+          function(results, callback) {
+            m.chai.expect(results.foo).to.be.true;
+            m.chai.expect(results.bar).to.be.true;
+            m.chai.expect(results.baz).to.be.true;
+
+            storage.clear(callback);
+          },
+          function(callback) {
+            async.parallel({
+              foo: _.partial(storage.has, 'foo'),
+              bar: _.partial(storage.has, 'bar'),
+              baz: _.partial(storage.has, 'baz')
+            }, callback);
+          },
+        ], function(error, results) {
           m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.be.true;
-
-          storage.has('bar', function(error, hasKey) {
-            m.chai.expect(error).to.not.exist;
-            m.chai.expect(hasKey).to.be.true;
-
-            storage.has('baz', function(error, hasKey) {
-              m.chai.expect(error).to.not.exist;
-              m.chai.expect(hasKey).to.be.true;
-
-              storage.clear(function(error) {
-                m.chai.expect(error).to.not.exist;
-
-                storage.has('foo', function(error, hasKey) {
-                  m.chai.expect(error).to.not.exist;
-                  m.chai.expect(hasKey).to.be.false;
-
-                  storage.has('bar', function(error, hasKey) {
-                    m.chai.expect(error).to.not.exist;
-                    m.chai.expect(hasKey).to.be.false;
-
-                    storage.has('baz', function(error, hasKey) {
-                      m.chai.expect(error).to.not.exist;
-                      m.chai.expect(hasKey).to.be.false;
-                      done();
-                    });
-                  });
-                });
-              });
-            });
-          });
+          m.chai.expect(results.foo).to.be.false;
+          m.chai.expect(results.bar).to.be.false;
+          m.chai.expect(results.baz).to.be.false;
+          done();
         });
       });
 
