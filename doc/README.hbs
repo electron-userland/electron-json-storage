@@ -19,15 +19,7 @@ Install `electron-json-storage` by running:
 $ npm install --save electron-json-storage
 ```
 
-Renderer process
-----------------
-
-This module is meant to be used from the `main` process. You can still remotely require it with:
-
-```js
-const remote = require('electron').remote;
-const storage = remote.require('electron-json-storage');
-```
+You can require this module from either the **main** or **renderer** process (with and without `remote`).
 
 Documentation
 -------------
