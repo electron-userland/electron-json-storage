@@ -34,7 +34,8 @@
     "mochainon": "^1.0.0"
   },
   "dependencies": {
-    "bluebird": "^3.1.4",
+    "async": "^1.5.2",
+    "exists-file": "^1.0.0",
     "lodash": "^4.0.1",
     "rimraf": "^2.5.1"
   }

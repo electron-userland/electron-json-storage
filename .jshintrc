@@ -19,8 +19,6 @@
     // @author http://michael.haschke.biz/
     // @license http://unlicense.org/
 
-    "esversion"     : 6,
-
     // == Enforcing Options ===============================================
     //
     // These options tell JSHint to be more strict towards your code. Use

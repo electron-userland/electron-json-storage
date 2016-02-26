@@ -26,8 +26,8 @@
 
 const m = require('mochainon');
 const _ = require('lodash');
-const Bluebird = require('bluebird');
-const fs = Bluebird.promisifyAll(require('fs'));
+const async = require('async');
+const fs = require('fs');
 const storage = require('../lib/storage');
 const utils = require('../lib/utils');
 
@@ -38,19 +38,31 @@ describe('Electron JSON Storage', function() {
 
   describe('.get()', function() {
 
-    it('should be rejected if no key', function() {
-      const promise = storage.get();
-      m.chai.expect(promise).to.be.rejectedWith('Missing key');
+    it('should yield an error if no key', function(done) {
+      storage.get(null, function(error, data) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Missing key');
+        m.chai.expect(data).to.not.exist;
+        done();
+      });
     });
 
-    it('should be rejected if key is not a string', function() {
-      const promise = storage.get(123);
-      m.chai.expect(promise).to.be.rejectedWith('Invalid key');
+    it('should yield an error if key is not a string', function(done) {
+      storage.get(123, function(error, data) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Invalid key');
+        m.chai.expect(data).to.not.exist;
+        done();
+      });
     });
 
-    it('should be rejected if key is a blank string', function() {
-      const promise = storage.get('    ');
-      m.chai.expect(promise).to.be.rejectedWith('Invalid key');
+    it('should yield an error if key is a blank string', function(done) {
+      storage.get('    ', function(error, data) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Invalid key');
+        m.chai.expect(data).to.not.exist;
+        done();
+      });
     });
 
     describe('given stored settings', function() {
@@ -59,19 +71,28 @@ describe('Electron JSON Storage', function() {
         storage.set('foo', { data: 'hello world' }, done);
       });
 
-      it('should eventually become the data', function() {
-        const promise = storage.get('foo');
-        m.chai.expect(promise).to.become({ data: 'hello world' });
+      it('should yield the data', function(done) {
+        storage.get('foo', function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({ data: 'hello world' });
+          done();
+        });
       });
 
-      it('should eventually become the data if explicitly passing the extension', function() {
-        const promise = storage.get('foo.json');
-        m.chai.expect(promise).to.become({ data: 'hello world' });
+      it('should yield the data if explicitly passing the extension', function(done) {
+        storage.get('foo.json', function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({ data: 'hello world' });
+          done();
+        });
       });
 
-      it('should eventually become an empty object given an incorrect key', function() {
-        const promise = storage.get('foobarbaz');
-        m.chai.expect(promise).to.become({});
+      it('should yield an empty object given an incorrect key', function(done) {
+        storage.get('foobarbaz', function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({});
+          done();
+        });
       });
 
     });
@@ -88,9 +109,13 @@ describe('Electron JSON Storage', function() {
 
       });
 
-      it('should be rejected with an error', function() {
-        const promise = storage.get('foo');
-        m.chai.expect(promise).to.be.rejectedWith('Invalid data');
+      it('should yield an error with an error', function(done) {
+        storage.get('foo', function(error, data) {
+          m.chai.expect(error).to.be.an.instanceof(Error);
+          m.chai.expect(error.message).to.equal('Invalid data');
+          m.chai.expect(data).to.not.exist;
+          done();
+        });
       });
 
     });
@@ -99,40 +124,66 @@ describe('Electron JSON Storage', function() {
 
   describe('.set()', function() {
 
-    it('should be rejected if no key', function() {
-      const promise = storage.set(null, { foo: 'bar' });
-      m.chai.expect(promise).to.be.rejectedWith('Missing key');
+    it('should yield an error if no key', function(done) {
+      storage.set(null, { foo: 'bar' }, function(error) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Missing key');
+        done();
+      });
     });
 
-    it('should be rejected if key is not a string', function() {
-      const promise = storage.set(123, { foo: 'bar' });
-      m.chai.expect(promise).to.be.rejectedWith('Invalid key');
+    it('should yield an error if key is not a string', function(done) {
+      storage.set(123, { foo: 'bar' }, function(error) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Invalid key');
+        done();
+      });
     });
 
-    it('should be rejected if key is a blank string', function() {
-      const promise = storage.set('    ', { foo: 'bar' });
-      m.chai.expect(promise).to.be.rejectedWith('Invalid key');
+    it('should yield an error if key is a blank string', function(done) {
+      storage.set('    ', { foo: 'bar' }, function(error) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Invalid key');
+        done();
+      });
     });
 
-    it('should be rejected if data is not a valid JSON object', function() {
-      const promise = storage.set('foo', _.noop);
-      m.chai.expect(promise).to.be.rejectedWith('Invalid JSON data');
+    it('should yield an error if data is not a valid JSON object', function(done) {
+      storage.set('foo', _.noop, function(error) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Invalid JSON data');
+        done();
+      });
     });
 
     it('should be able to store a valid JSON object', function(done) {
-      storage.set('foo', { foo: 'baz' }).then(function() {
-        return storage.get('foo');
-      }).then(function(data) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo', { foo: 'baz' }, callback);
+        },
+        function(callback) {
+          storage.get('foo', callback);
+        }
+      ], function(error, data) {
+        m.chai.expect(error).to.not.exist;
         m.chai.expect(data).to.deep.equal({ foo: 'baz' });
-      }).nodeify(done);
+        done();
+      });
     });
 
     it('should ignore an explicit json extension', function(done) {
-      storage.set('foo.json', { foo: 'baz' }).then(function() {
-        return storage.get('foo');
-      }).then(function(data) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo.json', { foo: 'baz' }, callback);
+        },
+        function(callback) {
+          storage.get('foo', callback);
+        }
+      ], function(error, data) {
+        m.chai.expect(error).to.not.exist;
         m.chai.expect(data).to.deep.equal({ foo: 'baz' });
-      }).nodeify(done);
+        done();
+      });
     });
 
     describe('given an existing stored key', function() {
@@ -142,23 +193,34 @@ describe('Electron JSON Storage', function() {
       });
 
       it('should be able to override the stored key', function(done) {
-        storage.get('foo').then(function(data) {
-          m.chai.expect(data).to.deep.equal({ foo: 'bar' });
-        }).then(function() {
-          return storage.set('foo', { foo: 'baz' });
-        }).then(function() {
-          return storage.get('foo');
-        }).then(function(data) {
+        async.waterfall([
+          function(callback) {
+            storage.get('foo', callback);
+          },
+          function(data, callback) {
+            m.chai.expect(data).to.deep.equal({ foo: 'bar' });
+            storage.set('foo', { foo: 'baz' }, callback);
+          },
+          function(callback) {
+            storage.get('foo', callback);
+          }
+        ], function(error, data) {
+          m.chai.expect(error).to.not.exist;
           m.chai.expect(data).to.deep.equal({ foo: 'baz' });
-        }).nodeify(done);
+          done();
+        });
       });
 
       it('should not override the stored key if the passed data is invalid', function(done) {
-        storage.set('foo', _.noop).catch(function() {
-          return storage.get('foo');
-        }).then(function(data) {
-          m.chai.expect(data).to.deep.equal({ foo: 'bar' });
-        }).nodeify(done);
+        storage.set('foo', _.noop, function(error) {
+          m.chai.expect(error).to.be.an.instanceof(Error);
+
+          storage.get('foo', function(error, data) {
+            m.chai.expect(error).to.not.exist;
+            m.chai.expect(data).to.deep.equal({ foo: 'bar' });
+            done();
+          });
+        });
       });
 
     });
@@ -167,19 +229,31 @@ describe('Electron JSON Storage', function() {
 
   describe('.has()', function() {
 
-    it('should be rejected if no key', function() {
-      const promise = storage.has(null);
-      m.chai.expect(promise).to.be.rejectedWith('Missing key');
+    it('should yield an error if no key', function(done) {
+      storage.has(null, function(error, hasKey) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Missing key');
+        m.chai.expect(hasKey).to.not.exist;
+        done();
+      });
     });
 
-    it('should be rejected if key is not a string', function() {
-      const promise = storage.has(123);
-      m.chai.expect(promise).to.be.rejectedWith('Invalid key');
+    it('should yield an error if key is not a string', function(done) {
+      storage.has(123, function(error, hasKey) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Invalid key');
+        m.chai.expect(hasKey).to.not.exist;
+        done();
+      });
     });
 
-    it('should be rejected if key is a blank string', function() {
-      const promise = storage.has('    ');
-      m.chai.expect(promise).to.be.rejectedWith('Invalid key');
+    it('should yield an error if key is a blank string', function(done) {
+      storage.has('    ', function(error, hasKey) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Invalid key');
+        m.chai.expect(hasKey).to.not.exist;
+        done();
+      });
     });
 
     describe('given a stored key', function() {
@@ -188,19 +262,28 @@ describe('Electron JSON Storage', function() {
         storage.set('foo', { foo: 'bar' }, done);
       });
 
-      it('should eventually be true if the key exists', function() {
-        const promise = storage.has('foo');
-        m.chai.expect(promise).to.eventually.be.true;
+      it('should yield true if the key exists', function(done) {
+        storage.has('foo', function(error, hasKey) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(hasKey).to.equal(true);
+          done();
+        });
       });
 
-      it('should eventually be true if the key has a json extension', function() {
-        const promise = storage.has('foo.json');
-        m.chai.expect(promise).to.eventually.be.true;
+      it('should yield true if the key has a json extension', function(done) {
+        storage.has('foo.json', function(error, hasKey) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(hasKey).to.equal(true);
+          done();
+        });
       });
 
-      it('should eventually be true if the key does not exist', function() {
-        const promise = storage.has('hello');
-        m.chai.expect(promise).to.eventually.be.false;
+      it('should yield false if the key does not exist', function(done) {
+        storage.has('hello', function(error, hasKey) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(hasKey).to.equal(false);
+          done();
+        });
       });
 
     });
@@ -209,64 +292,102 @@ describe('Electron JSON Storage', function() {
 
   describe('.keys()', function() {
 
-    it('should return an empty array if no keys', function() {
-      const promise = storage.keys();
-      m.chai.expect(promise).to.become([]);
+    it('should yield an empty array if no keys', function(done) {
+      storage.keys(function(error, keys) {
+        m.chai.expect(error).to.not.exist;
+        m.chai.expect(keys).to.deep.equal([]);
+        done();
+      });
     });
 
-    it('should return a single key if there is one saved setting', function(done) {
-      storage.set('foo', 'bar').then(function() {
-        const promise = storage.keys();
-        m.chai.expect(promise).to.become([ 'foo' ]);
-      }).nodeify(done);
+    it('should yield a single key if there is one saved setting', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo', 'bar', callback);
+        },
+        storage.keys,
+      ], function(error, keys) {
+        m.chai.expect(error).to.not.exist;
+        m.chai.expect(keys).to.deep.equal([ 'foo' ]);
+        done();
+      });
     });
 
     it('should ignore the .json extension', function(done) {
-      storage.set('foo.json', 'bar').then(function() {
-        const promise = storage.keys();
-        m.chai.expect(promise).to.become([ 'foo' ]);
-      }).nodeify(done);
+      async.waterfall([
+        function(callback) {
+          storage.set('foo.json', 'bar', callback);
+        },
+        storage.keys,
+      ], function(error, keys) {
+        m.chai.expect(error).to.not.exist;
+        m.chai.expect(keys).to.deep.equal([ 'foo' ]);
+        done();
+      });
     });
 
     it('should only remove the .json extension', function(done) {
-      storage.set('foo.data', 'bar').then(function() {
-        const promise = storage.keys();
-        m.chai.expect(promise).to.become([ 'foo.data' ]);
-      }).nodeify(done);
+      async.waterfall([
+        function(callback) {
+          storage.set('foo.data', 'bar', callback);
+        },
+        storage.keys,
+      ], function(error, keys) {
+        m.chai.expect(error).to.not.exist;
+        m.chai.expect(keys).to.deep.equal([ 'foo.data' ]);
+        done();
+      });
     });
 
     it('should detect multiple saved settings', function(done) {
-      return Bluebird.all([
-        storage.set('one', 'foo'),
-        storage.set('two', 'bar'),
-        storage.set('three', 'baz')
-      ]).then(function() {
-        const promise = storage.keys();
-        m.chai.expect(promise).to.become([
+      async.waterfall([
+        function(callback) {
+          async.parallel([
+            _.partial(storage.set, 'one', 'foo'),
+            _.partial(storage.set, 'two', 'bar'),
+            _.partial(storage.set, 'three', 'baz')
+          ], callback);
+        },
+        function(result, callback) {
+          storage.keys(callback);
+        }
+      ], function(error, keys) {
+        m.chai.expect(error).to.not.exist;
+        m.chai.expect(keys).to.deep.equal([
           'one',
           'three',
           'two'
         ]);
-      }).nodeify(done);
+        done();
+      });
     });
 
   });
 
   describe('.remove()', function() {
 
-    it('should be rejected if no key', function() {
-      const promise = storage.remove(null);
-      m.chai.expect(promise).to.be.rejectedWith('Missing key');
+    it('should yield an error if no key', function(done) {
+      storage.remove(null, function(error) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Missing key');
+        done();
+      });
     });
 
-    it('should be rejected if key is not a string', function() {
-      const promise = storage.remove(123);
-      m.chai.expect(promise).to.be.rejectedWith('Invalid key');
+    it('should yield an error if key is not a string', function(done) {
+      storage.remove(123, function(error) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Invalid key');
+        done();
+      });
     });
 
-    it('should be rejected if key is a blank string', function() {
-      const promise = storage.remove('    ');
-      m.chai.expect(promise).to.be.rejectedWith('Invalid key');
+    it('should yield an error if key is a blank string', function(done) {
+      storage.remove('     ', function(error) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Invalid key');
+        done();
+      });
     });
 
     describe('given a stored key', function() {
@@ -276,25 +397,41 @@ describe('Electron JSON Storage', function() {
       });
 
       it('should be able to remove the key', function(done) {
-        storage.has('foo').then(function(hasKey) {
-          m.chai.expect(hasKey).to.be.true;
-          return storage.remove('foo');
-        }).then(function() {
-          return storage.has('foo');
-        }).then(function(hasKey) {
+        async.waterfall([
+          function(callback) {
+            storage.has('foo', callback);
+          },
+          function(hasKey, callback) {
+            m.chai.expect(hasKey).to.be.true;
+            storage.remove('foo', callback);
+          },
+          function(callback) {
+            storage.has('foo', callback);
+          }
+        ], function(error, hasKey) {
+          m.chai.expect(error).to.not.exist;
           m.chai.expect(hasKey).to.be.false;
-        }).nodeify(done);
+          done();
+        });
       });
 
       it('should do nothing if the key does not exist', function(done) {
-        storage.has('bar').then(function(hasKey) {
+        async.waterfall([
+          function(callback) {
+            storage.has('bar', callback);
+          },
+          function(hasKey, callback) {
+            m.chai.expect(hasKey).to.be.false;
+            storage.remove('bar', callback);
+          },
+          function(callback) {
+            storage.has('bar', callback);
+          }
+        ], function(error, hasKey) {
+          m.chai.expect(error).to.not.exist;
           m.chai.expect(hasKey).to.be.false;
-          return storage.remove('bar');
-        }).then(function() {
-          return storage.has('bar');
-        }).then(function(hasKey) {
-          m.chai.expect(hasKey).to.be.false;
-        }).nodeify(done);
+          done();
+        });
       });
 
     });
@@ -303,9 +440,11 @@ describe('Electron JSON Storage', function() {
 
   describe('.clear()', function() {
 
-    it('should not be rejected if no keys', function() {
-      const promise = storage.clear();
-      m.chai.expect(promise).to.eventually.be.undefined;
+    it('should not yield an error if no keys', function(done) {
+      storage.clear(function(error) {
+        m.chai.expect(error).to.not.exist;
+        done();
+      });
     });
 
     describe('given a stored key', function() {
@@ -315,39 +454,53 @@ describe('Electron JSON Storage', function() {
       });
 
       it('should clear the key', function(done) {
-        storage.has('foo').then(function(hasKey) {
-          m.chai.expect(hasKey).to.be.true;
-          return storage.clear();
-        }).then(function() {
-          return storage.has('foo');
-        }).then(function(hasKey) {
+        async.waterfall([
+          function(callback) {
+            storage.has('foo', callback);
+          },
+          function(hasKey, callback) {
+            m.chai.expect(hasKey).to.be.true;
+            storage.clear(callback);
+          },
+          function(callback) {
+            storage.has('foo', callback);
+          }
+        ], function(error, hasKey) {
+          m.chai.expect(error).to.not.exist;
           m.chai.expect(hasKey).to.be.false;
-        }).nodeify(done);
+          done();
+        });
       });
 
       it('should not delete the user data directory', function(done) {
-        const isDirectory = function(dir) {
-          return fs.statAsync(dir).catch(function(error) {
-            if (error.code === 'ENOENT') {
-              return false;
+        const isDirectory = function(dir, callback) {
+          fs.stat(dir, function(error, stat) {
+            if (error) {
+              if (error.code === 'ENOENT') {
+                return callback(null, false);
+              }
+
+              return callback(error);
             }
 
-            throw error;
-          }).then(function(stats) {
-            return stats.isDirectory();
+            return callback(null, stat.isDirectory());
           });
         };
 
         const userDataPath = utils.getUserDataPath();
 
-        isDirectory(userDataPath).then(function(exists) {
-          m.chai.expect(exists).to.be.true;
-          return storage.clear();
-        }).then(function() {
-          return isDirectory(userDataPath);
-        }).then(function(exists) {
-          m.chai.expect(exists).to.be.true;
-        }).nodeify(done);
+        async.waterfall([
+          _.partial(isDirectory, userDataPath),
+          function(directory, callback) {
+            m.chai.expect(directory).to.be.true;
+            storage.clear(callback);
+          },
+          _.partial(isDirectory, userDataPath)
+        ], function(error, directory) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(directory).to.be.true;
+          done();
+        });
       });
 
     });
@@ -355,36 +508,43 @@ describe('Electron JSON Storage', function() {
     describe('given many stored keys', function() {
 
       beforeEach(function(done) {
-        Bluebird.all([
-          storage.set('foo', { name: 'foo' }),
-          storage.set('bar', { name: 'bar' }),
-          storage.set('baz', { name: 'baz' })
-        ]).nodeify(done);
+        async.parallel([
+          _.partial(storage.set, 'foo', { name: 'foo' }),
+          _.partial(storage.set, 'bar', { name: 'bar' }),
+          _.partial(storage.set, 'baz', { name: 'baz' })
+        ], done);
       });
 
       it('should clear all stored keys', function(done) {
-        Bluebird.props({
-          foo: storage.has('foo'),
-          bar: storage.has('bar'),
-          baz: storage.has('baz')
-        }).then(function(results) {
-          m.chai.expect(results.foo).to.be.true;
-          m.chai.expect(results.bar).to.be.true;
-          m.chai.expect(results.baz).to.be.true;
+        async.waterfall([
+          function(callback) {
+            async.parallel({
+              foo: _.partial(storage.has, 'foo'),
+              bar: _.partial(storage.has, 'bar'),
+              baz: _.partial(storage.has, 'baz')
+            }, callback);
+          },
+          function(results, callback) {
+            m.chai.expect(results.foo).to.be.true;
+            m.chai.expect(results.bar).to.be.true;
+            m.chai.expect(results.baz).to.be.true;
 
-          return storage.clear();
-        }).then(function() {
-          return Bluebird.props({
-            foo: storage.has('foo'),
-            bar: storage.has('bar'),
-            baz: storage.has('baz')
-          });
-        }).then(function(results) {
+            storage.clear(callback);
+          },
+          function(callback) {
+            async.parallel({
+              foo: _.partial(storage.has, 'foo'),
+              bar: _.partial(storage.has, 'bar'),
+              baz: _.partial(storage.has, 'baz')
+            }, callback);
+          },
+        ], function(error, results) {
+          m.chai.expect(error).to.not.exist;
           m.chai.expect(results.foo).to.be.false;
           m.chai.expect(results.bar).to.be.false;
           m.chai.expect(results.baz).to.be.false;
-
-        }).nodeify(done);
+          done();
+        });
       });
 
     });
