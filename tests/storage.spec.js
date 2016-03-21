@@ -31,10 +31,15 @@ const fs = require('fs');
 const storage = require('../lib/storage');
 const utils = require('../lib/utils');
 
+
+
 describe('Electron JSON Storage', function() {
 
   // Ensure each test case is always ran in a clean state
-  beforeEach(storage.clear);
+  beforeEach(function(callback){
+    storage.removeAllListeners();
+    storage.clear(callback);
+  });
 
   describe('.get()', function() {
 
@@ -124,12 +129,21 @@ describe('Electron JSON Storage', function() {
 
   describe('.set()', function() {
 
-    it('should yield an error if no key', function(done) {
-      storage.set(null, { foo: 'bar' }, function(error) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Missing key');
+    it('should trigger event.once()', function(done) {
+      storage.once('foo', function(data){
+        m.chai.expect(data).to.deep.equal({ foo: 'bar' });
         done();
       });
+      storage.set('foo', { foo: 'bar' });
+    });
+
+    it('should trigger event.on()', function(done) {
+      storage.on('foo', function(data){
+        m.chai.expect(data).to.deep.equal({ foo: 'bar' });
+        done();
+
+      });
+      storage.set('foo', { foo: 'bar' });
     });
 
     it('should yield an error if key is not a string', function(done) {
