@@ -30,6 +30,8 @@ const utils = require('../lib/utils');
 
 describe('Utils', function() {
 
+  this.timeout(10000);
+
   describe('.getUserDataPath()', function() {
 
     it('should return an absolute path', function() {
