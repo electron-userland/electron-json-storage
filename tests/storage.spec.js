@@ -33,6 +33,8 @@ const utils = require('../lib/utils');
 
 describe('Electron JSON Storage', function() {
 
+  this.timeout(10000);
+
   // Ensure each test case is always ran in a clean state
   beforeEach(storage.clear);
 
