@@ -30,7 +30,7 @@ const utils = require('../lib/utils');
 
 describe('Utils', function() {
 
-  this.timeout(10000);
+  this.timeout(20000);
 
   describe('.getUserDataPath()', function() {
 
