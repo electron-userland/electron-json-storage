@@ -27,15 +27,15 @@
   "author": "Juan Cruz Viotti <jviottidc@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "electron-mocha": "^0.8.0",
-    "electron-prebuilt": "^0.36.5",
+    "electron-mocha": "^2.3.1",
+    "electron-prebuilt": "^1.2.7",
     "jsdoc-to-markdown": "^1.1.1",
     "jshint": "^2.9.1",
     "mochainon": "^1.0.0"
   },
   "dependencies": {
-    "async": "^1.5.2",
-    "exists-file": "^1.0.0",
+    "async": "^2.0.0",
+    "exists-file": "^2.1.0",
     "lodash": "^4.0.1",
     "rimraf": "^2.5.1"
   }
