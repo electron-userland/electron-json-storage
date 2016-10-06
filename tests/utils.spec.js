@@ -86,6 +86,11 @@ describe('Utils', function() {
       m.chai.expect(path.isAbsolute(fileName)).to.be.true;
     });
 
+    it('should encode special characters', function() {
+      const fileName = utils.getFileName('foo?bar:baz');
+      m.chai.expect(path.basename(fileName)).to.equal('foo%3Fbar%3Abaz.json');
+    });
+
   });
 
 });
