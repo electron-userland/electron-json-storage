@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.2] - 2016-10-24
+
+### Changed
+
+- Fix "Callback has already been called" error in `.get()`.
+
 ## [2.0.1] - 2016-10-05
 
 ### Changed
@@ -29,6 +35,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[2.0.2]: https://github.com/jviotti/electron-json-storage/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/jviotti/electron-json-storage/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/jviotti/electron-json-storage/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/jviotti/electron-json-storage/compare/v1.0.0...v1.1.0
