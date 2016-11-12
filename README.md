@@ -27,6 +27,7 @@ Documentation
 
 * [storage](#module_storage)
     * [.get(key, callback)](#module_storage.get)
+    * [.getMany(keys, callback)](#module_storage.getMany)
     * [.getAll(callback)](#module_storage.getAll)
     * [.set(key, json, callback)](#module_storage.set)
     * [.has(key, callback)](#module_storage.has)
@@ -62,6 +63,32 @@ storage.get('foobar', function(error, data) {
   if (error) throw error;
 
   console.log(data);
+});
+```
+<a name="module_storage.getMany"></a>
+
+### storage.getMany(keys, callback)
+This function returns an object with the data of all the passed keys.
+If one of the keys doesn't exist, an empty object is returned for it.
+
+**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Summary**: Read many user data keys  
+**Access:** public  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| keys | <code>Array.&lt;String&gt;</code> | keys |
+| callback | <code>function</code> | callback (error, data) |
+
+**Example**  
+```js
+const storage = require('electron-json-storage');
+
+storage.getMany([ 'foobar', 'barbaz' ], function(error, data) {
+  if (error) throw error;
+
+  console.log(data.foobar);
+  console.log(data.barbaz);
 });
 ```
 <a name="module_storage.getAll"></a>
