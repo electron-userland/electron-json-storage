@@ -124,6 +124,48 @@ describe('Electron JSON Storage', function() {
 
   });
 
+  describe('.getAll()', function() {
+
+    describe('given no stored keys', function() {
+
+      beforeEach(storage.clear);
+
+      it('should return an empty object', function(done) {
+        storage.getAll(function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({});
+          done();
+        });
+      });
+
+    });
+
+    describe('given many stored keys', function() {
+
+      beforeEach(function(done) {
+        async.parallel([
+          _.partial(storage.set, 'foo', { name: 'foo' }),
+          _.partial(storage.set, 'bar', { name: 'bar' }),
+          _.partial(storage.set, 'baz', { name: 'baz' })
+        ], done);
+      });
+
+      it('should return all stored keys', function(done) {
+        storage.getAll(function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            foo: { name: 'foo' },
+            bar: { name: 'bar' },
+            baz: { name: 'baz' }
+          });
+          done();
+        });
+      });
+
+    });
+
+  });
+
   describe('.set()', function() {
 
     it('should yield an error if no key', function(done) {
