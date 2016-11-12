@@ -4,7 +4,7 @@ electron-json-storage
 > Easily write and read user settings in Electron apps
 
 [![npm version](https://badge.fury.io/js/electron-json-storage.svg)](http://badge.fury.io/js/electron-json-storage)
-[![dependencies](https://david-dm.org/jviotti/electron-json-storage.svg)](https://david-dm.org/jviotti/electron-json-storage)
+[![dependencies](https://david-dm.org/jviotti/electron-json-storage.svg)](https://david-dm.org/jviotti/electron-json-storage.svg)
 [![Build Status](https://travis-ci.org/jviotti/electron-json-storage.svg?branch=master)](https://travis-ci.org/jviotti/electron-json-storage)
 [![Build status](https://ci.appveyor.com/api/projects/status/ulwk1nnh7l8209xg/branch/master?svg=true)](https://ci.appveyor.com/project/jviotti/electron-json-storage/branch/master)
 
@@ -27,6 +27,7 @@ Documentation
 
 * [storage](#module_storage)
     * [.get(key, callback)](#module_storage.get)
+    * [.getAll(callback)](#module_storage.getAll)
     * [.set(key, json, callback)](#module_storage.set)
     * [.has(key, callback)](#module_storage.has)
     * [.keys(callback)](#module_storage.keys)
@@ -34,6 +35,7 @@ Documentation
     * [.clear(callback)](#module_storage.clear)
 
 <a name="module_storage.get"></a>
+
 ### storage.get(key, callback)
 If the key doesn't exist in the user data, an empty object is returned.
 Also notice that the `.json` extension is added automatically, but it's
@@ -62,7 +64,31 @@ storage.get('foobar', function(error, data) {
   console.log(data);
 });
 ```
+<a name="module_storage.getAll"></a>
+
+### storage.getAll(callback)
+This function returns an empty object if there is no data to be read.
+
+**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Summary**: Read all user data  
+**Access:** public  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| callback | <code>function</code> | callback (error, data) |
+
+**Example**  
+```js
+const storage = require('electron-json-storage');
+
+storage.getAll(function(error, data) {
+  if (error) throw error;
+
+  console.log(data);
+});
+```
 <a name="module_storage.set"></a>
+
 ### storage.set(key, json, callback)
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Write user data  
@@ -83,6 +109,7 @@ storage.set('foobar', { foo: 'bar' }, function(error) {
 });
 ```
 <a name="module_storage.has"></a>
+
 ### storage.has(key, callback)
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Check if a key exists  
@@ -106,6 +133,7 @@ storage.has('foobar', function(error, hasKey) {
 });
 ```
 <a name="module_storage.keys"></a>
+
 ### storage.keys(callback)
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Get the list of saved keys  
@@ -128,6 +156,7 @@ storage.keys(function(error, keys) {
 });
 ```
 <a name="module_storage.remove"></a>
+
 ### storage.remove(key, callback)
 Notice this function does nothing, nor throws any error
 if the key doesn't exist.
@@ -150,6 +179,7 @@ storage.remove('foobar', function(error) {
 });
 ```
 <a name="module_storage.clear"></a>
+
 ### storage.clear(callback)
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Clear all stored data  
