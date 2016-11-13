@@ -124,6 +124,62 @@ describe('Electron JSON Storage', function() {
 
   });
 
+  describe('.getMany()', function() {
+
+    describe('given many stored keys', function() {
+
+      beforeEach(function(done) {
+        async.parallel([
+          _.partial(storage.set, 'foo', { name: 'foo' }),
+          _.partial(storage.set, 'bar', { name: 'bar' }),
+          _.partial(storage.set, 'baz', { name: 'baz' })
+        ], done);
+      });
+
+      it('should return an empty object if no passed keys', function(done) {
+        storage.getMany([], function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({});
+          done();
+        });
+      });
+
+      it('should read the passed keys', function(done) {
+        storage.getMany([ 'foo', 'baz' ], function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            foo: { name: 'foo' },
+            baz: { name: 'baz' }
+          });
+          done();
+        });
+      });
+
+      it('should be able to read a single key', function(done) {
+        storage.getMany([ 'foo' ], function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            foo: { name: 'foo' }
+          });
+          done();
+        });
+      });
+
+      it('should return empty objects for missing keys', function(done) {
+        storage.getMany([ 'foo', 'hello' ], function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            foo: { name: 'foo' },
+            hello: {}
+          });
+          done();
+        });
+      });
+
+    });
+
+  });
+
   describe('.getAll()', function() {
 
     describe('given no stored keys', function() {
