@@ -645,7 +645,7 @@ describe('Electron JSON Storage', function() {
         });
       });
 
-      it('should not delete the user data directory', function(done) {
+      it('should not delete the user data storage directory', function(done) {
         const isDirectory = function(dir, callback) {
           fs.stat(dir, function(error, stat) {
             if (error) {
@@ -672,6 +672,32 @@ describe('Electron JSON Storage', function() {
         ], function(error, directory) {
           m.chai.expect(error).to.not.exist;
           m.chai.expect(directory).to.be.true;
+          done();
+        });
+      });
+
+      it('should not delete other files inside the user data directory', function(done) {
+        const userDataPath = app.getPath('userData');
+
+        async.waterfall([
+          function(callback) {
+            async.parallel([
+              _.partial(fs.writeFile, path.join(userDataPath, 'foo'), 'foo'),
+              _.partial(fs.writeFile, path.join(userDataPath, 'bar'), 'bar.json')
+            ], callback);
+          },
+          function(results, callback) {
+            storage.clear(callback);
+          },
+          function(callback) {
+            async.parallel([
+              _.partial(fs.readFile, path.join(userDataPath, 'foo'), { encoding: 'utf8' }),
+              _.partial(fs.readFile, path.join(userDataPath, 'bar'), { encoding: 'utf8' })
+            ], callback);
+          }
+        ], function(error, results) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(results).to.deep.equal([ 'foo', 'bar.json' ]);
           done();
         });
       });
