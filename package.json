@@ -31,12 +31,14 @@
     "electron-prebuilt": "^1.2.7",
     "jsdoc-to-markdown": "^1.1.1",
     "jshint": "^2.9.1",
-    "mochainon": "^1.0.0"
+    "mochainon": "^1.0.0",
+    "tmp": "0.0.31"
   },
   "dependencies": {
     "async": "^2.0.0",
     "exists-file": "^2.1.0",
     "lodash": "^4.0.1",
+    "mkdirp": "^0.5.1",
     "rimraf": "^2.5.1"
   }
 }

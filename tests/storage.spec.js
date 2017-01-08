@@ -24,12 +24,16 @@
 
 'use strict';
 
+const electron = require('electron');
 const m = require('mochainon');
 const _ = require('lodash');
 const async = require('async');
 const fs = require('fs');
+const path = require('path');
+const tmp = require('tmp');
 const storage = require('../lib/storage');
 const utils = require('../lib/utils');
+const app = electron.app || electron.remote.app;
 
 describe('Electron JSON Storage', function() {
 
@@ -116,6 +120,31 @@ describe('Electron JSON Storage', function() {
           m.chai.expect(error).to.be.an.instanceof(Error);
           m.chai.expect(error.message).to.equal('Invalid data');
           m.chai.expect(data).to.not.exist;
+          done();
+        });
+      });
+
+    });
+
+    describe('given a non-existent user data path', function() {
+
+      beforeEach(function() {
+        this.oldUserData = app.getPath('userData');
+        app.setPath('userData', tmp.tmpNameSync());
+      });
+
+      afterEach(function() {
+        app.setPath('userData', this.oldUserData);
+      });
+
+      it('should return an empty object for any key', function(done) {
+        async.waterfall([
+          function(callback) {
+            storage.get('foo', callback);
+          },
+        ], function(error, result) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(result).to.deep.equal({});
           done();
         });
       });
@@ -336,6 +365,34 @@ describe('Electron JSON Storage', function() {
             m.chai.expect(data).to.deep.equal({ foo: 'bar' });
             done();
           });
+        });
+      });
+
+    });
+
+    describe('given a non-existent user data path', function() {
+
+      beforeEach(function() {
+        this.oldUserData = app.getPath('userData');
+        app.setPath('userData', tmp.tmpNameSync());
+      });
+
+      afterEach(function() {
+        app.setPath('userData', this.oldUserData);
+      });
+
+      it('should be able to set data', function(done) {
+        async.waterfall([
+          function(callback) {
+            storage.set('foo', { foo: 'bar' }, callback);
+          },
+          function(callback) {
+            storage.get('foo', callback);
+          },
+        ], function(error, result) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(result).to.deep.equal({ foo: 'bar' });
+          done();
         });
       });
 
