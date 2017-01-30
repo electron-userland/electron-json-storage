@@ -31,6 +31,8 @@ const async = require('async');
 const fs = require('fs');
 const path = require('path');
 const tmp = require('tmp');
+const rimraf = require('rimraf');
+const mkdirp = require('mkdirp');
 const storage = require('../lib/storage');
 const utils = require('../lib/utils');
 const app = electron.app || electron.remote.app;
@@ -69,6 +71,26 @@ describe('Electron JSON Storage', function() {
         m.chai.expect(data).to.not.exist;
         done();
       });
+    });
+
+    describe('given the user data path does not exist', function() {
+
+      beforeEach(function(done) {
+        rimraf(utils.getUserDataPath(), done);
+      });
+
+      afterEach(function(done) {
+        mkdirp(utils.getUserDataPath(), done);
+      });
+
+      it('should return an empty object for any key', function(done) {
+        storage.get('foobarbaz', function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({});
+          done();
+        });
+      });
+
     });
 
     describe('given stored settings', function() {
@@ -210,6 +232,26 @@ describe('Electron JSON Storage', function() {
   });
 
   describe('.getAll()', function() {
+
+    describe('given the user data path does not exist', function() {
+
+      beforeEach(function(done) {
+        rimraf(utils.getUserDataPath(), done);
+      });
+
+      afterEach(function(done) {
+        mkdirp(utils.getUserDataPath(), done);
+      });
+
+      it('should return an empty object', function(done) {
+        storage.getAll(function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({});
+          done();
+        });
+      });
+
+    });
 
     describe('given no stored keys', function() {
 
