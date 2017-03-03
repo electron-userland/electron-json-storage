@@ -38,11 +38,11 @@ describe('Utils', function() {
       m.chai.expect(path.isAbsolute(utils.getUserDataPath())).to.be.true;
     });
 
-    it('should equal the dirname of the path returned by getFileName()', function() {
-      const fileName = utils.getFileName('foo');
-      const userDataPath = utils.getUserDataPath();
-      m.chai.expect(path.dirname(fileName)).to.equal(userDataPath);
-    });
+    // it('should equal the dirname of the path returned by getFileName()', function() {
+    //   const fileName = utils.getFileName('foo');
+    //   const userDataPath = utils.getUserDataPath();
+    //   m.chai.expect(path.dirname(fileName)).to.equal(userDataPath);
+    // });
 
   });
 
