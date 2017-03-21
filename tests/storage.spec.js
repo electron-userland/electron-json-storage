@@ -137,10 +137,10 @@ describe('Electron JSON Storage', function() {
 
       });
 
-      it('should yield an error with an error', function(done) {
+      it('should yield an error', function(done) {
         storage.get('foo', function(error, data) {
           m.chai.expect(error).to.be.an.instanceof(Error);
-          m.chai.expect(error.message).to.equal('Invalid data');
+          m.chai.expect(error.message).to.equal('Invalid data: Foo{bar}123');
           m.chai.expect(data).to.not.exist;
           done();
         });
