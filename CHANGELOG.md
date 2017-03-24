@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.2] - 2017-03-24
+
+### Changed
+
+- Ignore `.DS_Store` in settings directory
+- Include the invalid error object on "invalid data" errors
+
 ## [3.0.1] - 2017-01-30
 
 ### Changed
@@ -66,6 +73,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[3.0.2]: https://github.com/jviotti/electron-json-storage/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/jviotti/electron-json-storage/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/jviotti/electron-json-storage/compare/v2.1.1...v3.0.0
 [2.1.1]: https://github.com/jviotti/electron-json-storage/compare/v2.1.0...v2.1.1
