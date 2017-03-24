@@ -507,6 +507,34 @@ describe('Electron JSON Storage', function() {
 
   describe('.keys()', function() {
 
+    describe('given a .DS_Store file in the settings directory', function() {
+
+      beforeEach(function(done) {
+        async.waterfall([
+          _.partial(storage.set, 'one', 'foo'),
+          _.partial(storage.set, 'two', 'bar'),
+          _.partial(storage.set, 'three', 'baz'),
+          _.partial(fs.writeFile, path.join(utils.getUserDataPath(), '.DS_Store'), 'foo')
+        ], done);
+      });
+
+      afterEach(function(done) {
+        rimraf(utils.getUserDataPath(), done);
+      });
+
+      it('should onlt include the json files', function(done) {
+        storage.keys(function(error, keys) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(keys.length).to.equal(3);
+          m.chai.expect(_.includes(keys, 'one')).to.be.true;
+          m.chai.expect(_.includes(keys, 'two')).to.be.true;
+          m.chai.expect(_.includes(keys, 'three')).to.be.true;
+          done();
+        });
+      });
+
+    });
+
     it('should yield an empty array if no keys', function(done) {
       storage.keys(function(error, keys) {
         m.chai.expect(error).to.not.exist;
