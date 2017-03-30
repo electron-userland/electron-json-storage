@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.4] - 2017-03-30
+
+### Changed
+
+- Get rid of `exists-file`, which is known to cause UglifyJS issues.
+
 ## [3.0.3] - 2017-03-30
 
 ### Changed
@@ -79,6 +85,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[3.0.4]: https://github.com/jviotti/electron-json-storage/compare/v3.0.3...v3.0.4
+[3.0.3]: https://github.com/jviotti/electron-json-storage/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/jviotti/electron-json-storage/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/jviotti/electron-json-storage/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/jviotti/electron-json-storage/compare/v2.1.1...v3.0.0
