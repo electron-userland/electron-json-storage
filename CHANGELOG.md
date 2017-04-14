@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.5] - 2017-04-14
+
+### Changed
+
+- Make the module work on Spectron tests.
+
 ## [3.0.4] - 2017-03-30
 
 ### Changed
@@ -85,6 +91,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[3.0.5]: https://github.com/jviotti/electron-json-storage/compare/v3.0.4...v3.0.5
 [3.0.4]: https://github.com/jviotti/electron-json-storage/compare/v3.0.3...v3.0.4
 [3.0.3]: https://github.com/jviotti/electron-json-storage/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/jviotti/electron-json-storage/compare/v3.0.1...v3.0.2
