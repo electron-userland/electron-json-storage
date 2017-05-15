@@ -1,6 +1,6 @@
 {
   "name": "electron-json-storage",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "Easily write and read user settings in Electron apps",
   "main": "lib/storage.js",
   "homepage": "https://github.com/jviotti/electron-json-storage",
