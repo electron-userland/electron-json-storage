@@ -10,6 +10,12 @@ electron-json-storage
 
 [Electron](http://electron.atom.io) lacks an easy way to persist and read user settings for your application. `electron-json-storage` implements an API somehow similar to [localStorage](https://developer.mozilla.org/en/docs/Web/API/Window/localStorage) to write and read JSON objects to/from the operating system application data directory, as defined by `app.getPath('userData')`.
 
+Related modules:
+
+- [electron-settings](https://github.com/nathanbuchar/electron-settings)
+- [electron-store](https://github.com/sindresorhus/electron-store)
+- [electron-storage](https://github.com/Cocycles/electron-storage)
+
 Installation
 ------------
 
