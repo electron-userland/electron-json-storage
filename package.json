@@ -3,10 +3,10 @@
   "version": "3.0.5",
   "description": "Easily write and read user settings in Electron apps",
   "main": "lib/storage.js",
-  "homepage": "https://github.com/jviotti/electron-json-storage",
+  "homepage": "https://github.com/electron-userland/electron-json-storage",
   "repository": {
     "type": "git",
-    "url": "git://github.com/jviotti/electron-json-storage.git"
+    "url": "git://github.com/electron-userland/electron-json-storage.git"
   },
   "directories": {
     "test": "tests"
@@ -24,7 +24,7 @@
     "app",
     "data"
   ],
-  "author": "Juan Cruz Viotti <jviottidc@gmail.com>",
+  "author": "Juan Cruz Viotti <jv@jviotti.com>",
   "license": "MIT",
   "devDependencies": {
     "electron-mocha": "^3.3.0",
