@@ -248,6 +248,8 @@ $ npm test
 Contribute
 ----------
 
+This project adheres to the [Contributor Covenant](http://contributor-covenant.org) code of conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to <jv@jviotti.com>.
+
 - Issue Tracker: [github.com/electron-userland/electron-json-storage/issues](https://github.com/electron-userland/electron-json-storage/issues)
 - Source Code: [github.com/electron-userland/electron-json-storage](https://github.com/electron-userland/electron-json-storage)
 
