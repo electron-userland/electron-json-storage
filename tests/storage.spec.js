@@ -44,6 +44,27 @@ describe('Electron JSON Storage', function() {
   // Ensure each test case is always ran in a clean state
   beforeEach(storage.clear);
 
+  describe('stress testing', function() {
+
+    const cases = _.times(1000, () => {
+      return Math.floor(Math.random() * 100000);
+    });
+
+    it('should survive serial stress testing', function(done) {
+      async.eachSeries(cases, function(number, callback) {
+        async.waterfall([
+          _.partial(storage.set, 'foo', { value: number }),
+          _.partial(storage.get, 'foo'),
+          function(data, next) {
+            m.chai.expect(data.value).to.equal(number);
+            next();
+          }
+        ], callback);
+      }, done);
+    });
+
+  });
+
   describe('.get()', function() {
 
     it('should yield an error if no key', function(done) {
