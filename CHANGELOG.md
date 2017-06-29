@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.6] - 2017-06-29
+
+### Changed
+
+- Ensure parallel writes don't corrupt the data.
+
 ## [3.0.5] - 2017-04-14
 
 ### Changed
@@ -91,6 +97,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[3.0.6]: https://github.com/electron-userland/electron-json-storage/compare/v3.0.5...v3.0.6
 [3.0.5]: https://github.com/electron-userland/electron-json-storage/compare/v3.0.4...v3.0.5
 [3.0.4]: https://github.com/electron-userland/electron-json-storage/compare/v3.0.3...v3.0.4
 [3.0.3]: https://github.com/electron-userland/electron-json-storage/compare/v3.0.2...v3.0.3
