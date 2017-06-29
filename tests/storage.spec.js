@@ -63,6 +63,20 @@ describe('Electron JSON Storage', function() {
       }, done);
     });
 
+    it('should survive parallel stress testing', function(done) {
+      async.eachSeries(cases, function(number, callback) {
+        async.parallel([
+          _.partial(storage.set, 'foo', { value: [number] }),
+          _.partial(storage.set, 'foo', { value: [number, number] })
+        ], function() {
+          storage.get('foo', function(error, data) {
+            m.chai.expect(error).to.not.exist;
+            callback();
+          });
+        });
+      }, done);
+    });
+
   });
 
   describe('.get()', function() {
