@@ -476,7 +476,46 @@ describe('Electron JSON Storage', function() {
     });
 
   });
+  
+  describe('.setMany()', function() {
 
+    it('should yield an error if no key', function(done) {
+      storage.setMany(null, function(error, finished) {
+        m.chai.expect(error).to.be.an.instanceof(Error);
+        m.chai.expect(error.message).to.equal('Invalid keys');
+        done();
+      });
+    });
+
+    it('should be able to store multiple valid JSON objects', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.setMany({
+            foo: { bar: 'baz' },
+            baz: { bar: 'foo' }
+          }, callback);
+        },
+        function(finished, callback) {
+          m.chai.expect(finished).to.be.true;
+          storage.getMany(['foo', 'baz'], callback);
+        }
+      ], function(error, data) {
+        m.chai.expect(data.foo).to.deep.equal({ bar: 'baz' });
+        m.chai.expect(data.baz).to.deep.equal({ bar: 'foo' });
+        done();
+      });
+    });
+
+    it('should ignore keys that are empty objects', function(done) {
+      storage.setMany({}, function(error, finished) {
+        m.chai.expect(error).to.not.exist;
+        m.chai.expect(finished).to.be.true;
+        done();
+      });
+    })
+
+  });
+  
   describe('.has()', function() {
 
     it('should yield an error if no key', function(done) {
