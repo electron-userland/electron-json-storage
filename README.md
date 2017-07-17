@@ -36,6 +36,7 @@ Documentation
     * [.getMany(keys, callback)](#module_storage.getMany)
     * [.getAll(callback)](#module_storage.getAll)
     * [.set(key, json, callback)](#module_storage.set)
+    * [.setMany(keys, callback)](#module_storage.setMany)
     * [.has(key, callback)](#module_storage.has)
     * [.keys(callback)](#module_storage.keys)
     * [.remove(key, callback)](#module_storage.remove)
@@ -141,6 +142,37 @@ storage.set('foobar', { foo: 'bar' }, function(error) {
   if (error) throw error;
 });
 ```
+<a name="module_storage.setMany"></a>
+
+### storage.setMany(keys, callback)
+**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Summary**: Write multiple sets of user data 
+**Access:** public  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| keys | <code>Object</code> | json object |
+| callback | <code>function</code> | callback (error, finished) |
+
+**Example**  
+```js
+const storage = require('electron-json-storage');
+
+storage.setMany({ foo: { bar: 'baz' }, baz: { bar: 'foo' } }, function(error, finished) {
+  if (error) {
+    console.log('Error saving ' + error.key);
+    throw error.error;
+  }
+  if (finished) console.log('finished');
+});
+```
+The `error` property of the callback is an object with two properties: 
+  - `error` (object), the error object
+  - `key` (string), the key that failed to save that failed to save).
+
+This function will set each key one by one, for each error that occurs the callback will be invoked. Therefore the `finished`
+parameter of the callback indicates if the function has finished saving all the data.
+
 <a name="module_storage.has"></a>
 
 ### storage.has(key, callback)
