@@ -128,6 +128,28 @@ describe('Electron JSON Storage', function() {
 
     });
 
+    describe('given stored keys with a colon', function () {
+
+      beforeEach(function(done) {
+        async.parallel([
+          _.partial(storage.set, 'foo', { name: 'foo' }),
+          _.partial(storage.set, 'bar:colon', { name: 'bar' })
+        ], done);
+      });
+
+      it('should return all stored keys', function (done) {
+        storage.getAll(function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            foo: { name: 'foo' },
+            'bar:colon': { name: 'bar' }
+          });
+          done();
+        });
+      });
+
+    });
+
     describe('given stored settings', function() {
 
       beforeEach(function(done) {
@@ -556,6 +578,36 @@ describe('Electron JSON Storage', function() {
   });
 
   describe('.keys()', function() {
+
+    describe('given a file name with colons', function() {
+
+      beforeEach(function(done) {
+        async.waterfall([
+          _.partial(storage.set, 'one', 'foo'),
+          _.partial(storage.set, 'two', 'bar'),
+          _.partial(storage.set, 'three:colon', 'baz')
+        ], done);
+      });
+
+      afterEach(function(done) {
+        rimraf(utils.getUserDataPath(), done);
+      });
+
+      it('should correctly decode the file names', function(done) {
+        storage.keys(function(error, keys) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(keys).to.deep.equal([
+            'one',
+            'three:colon',
+            'two'
+          ]);
+
+          done();
+        });
+
+      });
+
+    });
 
     describe('given a .DS_Store file in the settings directory', function() {
 
