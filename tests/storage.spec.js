@@ -362,6 +362,21 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should be able to store a valid JSON object in a file with a colon', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.set('test:value', { foo: 'bar' }, callback);
+        },
+        function(callback) {
+          storage.get('test:value', callback);
+        }
+      ], function(error, data) {
+        m.chai.expect(error).to.not.exist;
+        m.chai.expect(data).to.deep.equal({ foo: 'bar' });
+        done();
+      });
+    });
+
     it('should be able to store a valid JSON object', function(done) {
       async.waterfall([
         function(callback) {
