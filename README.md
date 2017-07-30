@@ -5,10 +5,16 @@ electron-json-storage
 
 [![npm version](https://badge.fury.io/js/electron-json-storage.svg)](http://badge.fury.io/js/electron-json-storage)
 [![dependencies](https://david-dm.org/jviotti/electron-json-storage.svg)](https://david-dm.org/jviotti/electron-json-storage.svg)
-[![Build Status](https://travis-ci.org/jviotti/electron-json-storage.svg?branch=master)](https://travis-ci.org/jviotti/electron-json-storage)
-[![Build status](https://ci.appveyor.com/api/projects/status/ulwk1nnh7l8209xg/branch/master?svg=true)](https://ci.appveyor.com/project/jviotti/electron-json-storage/branch/master)
+[![Build Status](https://travis-ci.org/electron-userland/electron-json-storage.svg?branch=master)](https://travis-ci.org/electron-userland/electron-json-storage)
+[![Build status](https://ci.appveyor.com/api/projects/status/ulwk1nnh7l8209xg/branch/master?svg=true)](https://ci.appveyor.com/project/electron-userland/electron-json-storage/branch/master)
 
 [Electron](http://electron.atom.io) lacks an easy way to persist and read user settings for your application. `electron-json-storage` implements an API somehow similar to [localStorage](https://developer.mozilla.org/en/docs/Web/API/Window/localStorage) to write and read JSON objects to/from the operating system application data directory, as defined by `app.getPath('userData')`.
+
+Related modules:
+
+- [electron-settings](https://github.com/nathanbuchar/electron-settings)
+- [electron-store](https://github.com/sindresorhus/electron-store)
+- [electron-storage](https://github.com/Cocycles/electron-storage)
 
 Installation
 ------------
@@ -228,7 +234,7 @@ storage.clear(function(error) {
 Support
 -------
 
-If you're having any problem, please [raise an issue](https://github.com/jviotti/electron-json-storage/issues/new) on GitHub and I'll be happy to help.
+If you're having any problem, please [raise an issue](https://github.com/electron-userland/electron-json-storage/issues/new) on GitHub and we'll be happy to help.
 
 Tests
 -----
@@ -242,8 +248,8 @@ $ npm test
 Contribute
 ----------
 
-- Issue Tracker: [github.com/jviotti/electron-json-storage/issues](https://github.com/jviotti/electron-json-storage/issues)
-- Source Code: [github.com/jviotti/electron-json-storage](https://github.com/jviotti/electron-json-storage)
+- Issue Tracker: [github.com/electron-userland/electron-json-storage/issues](https://github.com/electron-userland/electron-json-storage/issues)
+- Source Code: [github.com/electron-userland/electron-json-storage](https://github.com/electron-userland/electron-json-storage)
 
 Before submitting a PR, please make sure that you include tests, and that [jshint](http://jshint.com) runs without any warning:
 

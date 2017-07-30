@@ -44,6 +44,41 @@ describe('Electron JSON Storage', function() {
   // Ensure each test case is always ran in a clean state
   beforeEach(storage.clear);
 
+  describe('stress testing', function() {
+
+    const cases = _.times(1000, () => {
+      return Math.floor(Math.random() * 100000);
+    });
+
+    it('should survive serial stress testing', function(done) {
+      async.eachSeries(cases, function(number, callback) {
+        async.waterfall([
+          _.partial(storage.set, 'foo', { value: number }),
+          _.partial(storage.get, 'foo'),
+          function(data, next) {
+            m.chai.expect(data.value).to.equal(number);
+            next();
+          }
+        ], callback);
+      }, done);
+    });
+
+    it('should survive parallel stress testing', function(done) {
+      async.eachSeries(cases, function(number, callback) {
+        async.parallel([
+          _.partial(storage.set, 'foo', { value: [number] }),
+          _.partial(storage.set, 'foo', { value: [number, number] })
+        ], function() {
+          storage.get('foo', function(error, data) {
+            m.chai.expect(error).to.not.exist;
+            callback();
+          });
+        });
+      }, done);
+    });
+
+  });
+
   describe('.get()', function() {
 
     it('should yield an error if no key', function(done) {
@@ -87,6 +122,28 @@ describe('Electron JSON Storage', function() {
         storage.get('foobarbaz', function(error, data) {
           m.chai.expect(error).to.not.exist;
           m.chai.expect(data).to.deep.equal({});
+          done();
+        });
+      });
+
+    });
+
+    describe('given stored keys with a colon', function () {
+
+      beforeEach(function(done) {
+        async.parallel([
+          _.partial(storage.set, 'foo', { name: 'foo' }),
+          _.partial(storage.set, 'bar:colon', { name: 'bar' })
+        ], done);
+      });
+
+      it('should return all stored keys', function (done) {
+        storage.getAll(function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            foo: { name: 'foo' },
+            'bar:colon': { name: 'bar' }
+          });
           done();
         });
       });
@@ -137,10 +194,10 @@ describe('Electron JSON Storage', function() {
 
       });
 
-      it('should yield an error with an error', function(done) {
+      it('should yield an error', function(done) {
         storage.get('foo', function(error, data) {
           m.chai.expect(error).to.be.an.instanceof(Error);
-          m.chai.expect(error.message).to.equal('Invalid data');
+          m.chai.expect(error.message).to.equal('Invalid data: Foo{bar}123');
           m.chai.expect(data).to.not.exist;
           done();
         });
@@ -327,6 +384,21 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should be able to store a valid JSON object in a file with a colon', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.set('test:value', { foo: 'bar' }, callback);
+        },
+        function(callback) {
+          storage.get('test:value', callback);
+        }
+      ], function(error, data) {
+        m.chai.expect(error).to.not.exist;
+        m.chai.expect(data).to.deep.equal({ foo: 'bar' });
+        done();
+      });
+    });
+
     it('should be able to store a valid JSON object', function(done) {
       async.waterfall([
         function(callback) {
@@ -506,6 +578,64 @@ describe('Electron JSON Storage', function() {
   });
 
   describe('.keys()', function() {
+
+    describe('given a file name with colons', function() {
+
+      beforeEach(function(done) {
+        async.waterfall([
+          _.partial(storage.set, 'one', 'foo'),
+          _.partial(storage.set, 'two', 'bar'),
+          _.partial(storage.set, 'three:colon', 'baz')
+        ], done);
+      });
+
+      afterEach(function(done) {
+        rimraf(utils.getUserDataPath(), done);
+      });
+
+      it('should correctly decode the file names', function(done) {
+        storage.keys(function(error, keys) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(keys).to.deep.equal([
+            'one',
+            'three:colon',
+            'two'
+          ]);
+
+          done();
+        });
+
+      });
+
+    });
+
+    describe('given a .DS_Store file in the settings directory', function() {
+
+      beforeEach(function(done) {
+        async.waterfall([
+          _.partial(storage.set, 'one', 'foo'),
+          _.partial(storage.set, 'two', 'bar'),
+          _.partial(storage.set, 'three', 'baz'),
+          _.partial(fs.writeFile, path.join(utils.getUserDataPath(), '.DS_Store'), 'foo')
+        ], done);
+      });
+
+      afterEach(function(done) {
+        rimraf(utils.getUserDataPath(), done);
+      });
+
+      it('should onlt include the json files', function(done) {
+        storage.keys(function(error, keys) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(keys.length).to.equal(3);
+          m.chai.expect(_.includes(keys, 'one')).to.be.true;
+          m.chai.expect(_.includes(keys, 'two')).to.be.true;
+          m.chai.expect(_.includes(keys, 'three')).to.be.true;
+          done();
+        });
+      });
+
+    });
 
     it('should yield an empty array if no keys', function(done) {
       storage.keys(function(error, keys) {
