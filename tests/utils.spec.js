@@ -39,11 +39,11 @@ describe('Utils', function() {
       m.chai.expect(path.isAbsolute(utils.getUserDataPath())).to.be.true;
     });
 
-    // it('should equal the dirname of the path returned by getFileName()', function() {
-    //   const fileName = utils.getFileName('foo');
-    //   const userDataPath = utils.getUserDataPath();
-    //   m.chai.expect(path.dirname(fileName)).to.equal(userDataPath);
-    // });
+     it('should equal the dirname of the path returned by getFileName()', function() {
+       const fileName = utils.getFileName('foo');
+       const userDataPath = utils.getUserDataPath();
+       m.chai.expect(path.dirname(fileName)).to.equal(userDataPath);
+     });
 
   });
 
@@ -123,6 +123,12 @@ describe('Utils', function() {
     it('should encode special characters', function() {
       const fileName = utils.getFileName('foo?bar:baz');
       m.chai.expect(path.basename(fileName)).to.equal('foo%3Fbar%3Abaz.json');
+    });
+
+    it('should work with a different directory than the user', function() {
+      const newpath = path.join(utils.getUserDataPath(), "newpath");
+      const fileName = utils.getFileName('foo?bar:baz', newpath);
+      m.chai.expect(path.dirname(fileName)).to.equal(newpath);
     });
 
   });
