@@ -290,6 +290,27 @@ describe('Electron JSON Storage', function() {
 
   describe('.getAll()', function() {
 
+    const newpath = path.join(utils.getUserDataPath(), "newfolder");
+
+    beforeEach(function(done) {
+      async.waterfall( [
+        async.asyncify(_.partial(utils.setUserDataPath, newpath)),
+        function (err,done) {
+          storage.clear("", done);
+        },
+        async.asyncify(_.partial(utils.setUserDataPath,"")),
+        function (err,done) {
+          storage.clear("", done);
+        },
+      ], done);
+    });
+
+    afterEach(function (done) {
+      async.waterfall( [
+        async.asyncify(_.partial(utils.setUserDataPath))
+      ], done);
+    });
+
     describe('given the user data path does not exist', function() {
 
       beforeEach(function(done) {
@@ -348,6 +369,64 @@ describe('Electron JSON Storage', function() {
 
     });
 
+    describe('given many stored keys in multiple directory', function() {
+
+      beforeEach(function(done) {
+        async.parallel([
+          _.partial(storage.set, 'foo', { name: 'foo' }),
+          _.partial(storage.set, 'bar', { name: 'bar' }),
+        ], done);
+      });
+
+      it('should return only the keys stored in the current user directory', function(done) {
+
+        async.waterfall([
+          async.asyncify(_.partial(utils.setUserDataPath, newpath)),
+          function(err, done) {
+            storage.set('baz', { name: 'baz' }, done);
+          },
+          function (done) {
+            storage.getAll(function (error, data) {
+              m.chai.expect(error).to.not.exist;
+              m.chai.expect(data).to.deep.equal({
+                baz: { name: 'baz' }
+              });
+              done();
+            });
+          }
+        ], done);
+        });
+      });
+
+    describe('given many stored keys in multiple directory', function() {
+
+      beforeEach(function(done) {
+        async.parallel([
+          _.partial(storage.set, 'foo', { name: 'foo' }),
+          _.partial(storage.set, 'bar', { name: 'bar' }),
+        ], done);
+      });
+
+      it('should return only the keys stored in the specified directory', function(done) {
+
+        async.waterfall([
+          async.asyncify(_.partial(utils.setUserDataPath, newpath)),
+          function(err, done) {
+            storage.set('baz', { name: 'baz' }, done);
+          },
+          async.asyncify(_.partial(utils.setUserDataPath)),
+          function (err, done) {
+            storage.getAll(newpath, function (error, data) {
+              m.chai.expect(error).to.not.exist;
+              m.chai.expect(data).to.deep.equal({
+                baz: { name: 'baz' }
+              });
+              done();
+            });
+          }
+        ], done);
+      });
+    });
   });
 
   describe('.set()', function() {
@@ -578,6 +657,14 @@ describe('Electron JSON Storage', function() {
   });
 
   describe('.keys()', function() {
+
+    beforeEach(function () {
+      utils.setUserDataPath();
+    });
+
+    afterEach(function () {
+      utils.setUserDataPath();
+    });
 
     describe('given a file name with colons', function() {
 

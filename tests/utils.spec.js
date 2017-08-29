@@ -27,6 +27,7 @@
 const m = require('mochainon');
 const path = require('path');
 const utils = require('../lib/utils');
+const electron = require('electron');
 
 describe('Utils', function() {
 
@@ -38,10 +39,43 @@ describe('Utils', function() {
       m.chai.expect(path.isAbsolute(utils.getUserDataPath())).to.be.true;
     });
 
+     it('should equal the dirname of the path returned by getFileName()', function() {
+       const fileName = utils.getFileName('foo');
+       const userDataPath = utils.getUserDataPath();
+       m.chai.expect(path.dirname(fileName)).to.equal(userDataPath);
+     });
+
+  });
+
+  describe('.setUserDataPath()', function() {
+
+    beforeEach(function() {
+      utils.setUserDataPath();
+    });
+
+    it('should reset to default path with default argument', function() {
+      const app = electron.app || electron.remote.app;
+      utils.setUserDataPath();
+      m.chai.expect(utils.getUserDataPath()).to.equal(path.join(app.getPath('userData'), 'storage'));
+    });
+
+    it('should change the path used correctly', function() {
+      const newpath = path.join(utils.getUserDataPath(), "foo/bar");
+      utils.setUserDataPath(newpath);
+      m.chai.expect(utils.getUserDataPath()).to.equal(newpath);
+    });
+
+    it('should throw if path is not absolute', function() {
+      m.chai.expect(function() {
+        utils.setUserDataPath("testpath/storage");
+      }).to.throw('Not an absolute directory');
+    });
+
     it('should equal the dirname of the path returned by getFileName()', function() {
+      const newpath = path.join(utils.getUserDataPath(), "foo/bar");
+      utils.setUserDataPath(newpath);
       const fileName = utils.getFileName('foo');
-      const userDataPath = utils.getUserDataPath();
-      m.chai.expect(path.dirname(fileName)).to.equal(userDataPath);
+      m.chai.expect(path.dirname(fileName)).to.equal(newpath);
     });
 
   });
@@ -89,6 +123,12 @@ describe('Utils', function() {
     it('should encode special characters', function() {
       const fileName = utils.getFileName('foo?bar:baz');
       m.chai.expect(path.basename(fileName)).to.equal('foo%3Fbar%3Abaz.json');
+    });
+
+    it('should work with a different directory than the user', function() {
+      const newpath = path.join(utils.getUserDataPath(), "newpath");
+      const fileName = utils.getFileName('foo?bar:baz', newpath);
+      m.chai.expect(path.dirname(fileName)).to.equal(newpath);
     });
 
   });
