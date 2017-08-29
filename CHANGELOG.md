@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.1.0] - 2017-08-29
+
+### Added
+
+- Support storing values in a custom directory.
+
 ## [3.0.7] - 2017-07-27
 
 ### Changed
@@ -103,6 +109,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[3.1.0]: https://github.com/electron-userland/electron-json-storage/compare/v3.0.7...v3.1.0
 [3.0.7]: https://github.com/electron-userland/electron-json-storage/compare/v3.0.6...v3.0.7
 [3.0.6]: https://github.com/electron-userland/electron-json-storage/compare/v3.0.5...v3.0.6
 [3.0.5]: https://github.com/electron-userland/electron-json-storage/compare/v3.0.4...v3.0.5
