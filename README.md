@@ -32,6 +32,8 @@ Documentation
 
 
 * [storage](#module_storage)
+    * [.setDataPath(directory)](#module_storage.setDataPath)
+    * [.getDataPath()](#module_storage.getDataPath) ⇒ <code>String</code>
     * [.get(key, callback)](#module_storage.get)
     * [.getMany(keys, callback)](#module_storage.getMany)
     * [.getAll(callback)](#module_storage.getAll)
@@ -41,6 +43,41 @@ Documentation
     * [.remove(key, callback)](#module_storage.remove)
     * [.clear(callback)](#module_storage.clear)
 
+<a name="module_storage.setDataPath"></a>
+
+### storage.setDataPath(directory)
+**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Summary**: Set current data path  
+**Access:** public  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| directory | <code>String</code> | directory |
+
+**Example**  
+```js
+const os = require('os');
+const storage = require('electron-json-storage');
+
+storage.setDataPath(os.tmpdir());
+```
+<a name="module_storage.getDataPath"></a>
+
+### storage.getDataPath() ⇒ <code>String</code>
+Returns the current data path. It defaults to a directory called
+"storage" inside Electron's `userData` path.
+
+**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Summary**: Get current user data path  
+**Returns**: <code>String</code> - the user data path  
+**Access:** public  
+**Example**  
+```js
+const storage = require('electron-json-storage');
+
+const dataPath = storage.getDataPath();
+console.log(dataPath);
+```
 <a name="module_storage.get"></a>
 
 ### storage.get(key, callback)
@@ -215,7 +252,7 @@ storage.remove('foobar', function(error) {
 
 ### storage.clear(callback)
 **Kind**: static method of <code>[storage](#module_storage)</code>  
-**Summary**: Clear all stored data  
+**Summary**: Clear all stored data in the current user data path  
 **Access:** public  
 
 | Param | Type | Description |
