@@ -30,6 +30,7 @@ const _ = require('lodash');
 const async = require('async');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const tmp = require('tmp');
 const rimraf = require('rimraf');
 const mkdirp = require('mkdirp');
@@ -42,7 +43,10 @@ describe('Electron JSON Storage', function() {
   this.timeout(20000);
 
   // Ensure each test case is always ran in a clean state
-  beforeEach(storage.clear);
+  beforeEach(function(done) {
+    storage.setDataPath(utils.DEFAULT_DATA_PATH);
+    storage.clear(done);
+  });
 
   describe('stress testing', function() {
 
@@ -79,6 +83,57 @@ describe('Electron JSON Storage', function() {
 
   });
 
+  describe('.DEFAULT_DATA_PATH', function() {
+
+    it('should be a string', function() {
+      m.chai.expect(_.isString(storage.DEFAULT_DATA_PATH)).to.be.true;
+    })
+
+    it('should be an absolute path', function() {
+      m.chai.expect(path.isAbsolute(storage.DEFAULT_DATA_PATH)).to.be.true;
+    });
+
+  });
+
+  describe('.setDataPath()', function() {
+
+    it('should be able to set a custom data path', function() {
+      const newDataPath = os.tmpdir();
+      storage.setDataPath(newDataPath);
+      const dataPath = storage.getDataPath();
+      m.chai.expect(dataPath).to.equal(newDataPath);
+    })
+
+    it('should throw given no path', function() {
+      m.chai.expect(function() {
+        storage.setDataPath();
+      }).to.throw('Invalid data path: undefined');
+    })
+
+    it('should throw given a relative path', function() {
+      m.chai.expect(function() {
+        storage.setDataPath('foo');
+      }).to.throw('The user data path should be an absolute directory');
+    })
+
+  })
+
+  describe('.getDataPath()', function() {
+
+    it('should initially return the default data path', function() {
+      const dataPath = storage.getDataPath();
+      m.chai.expect(dataPath).to.equal(utils.DEFAULT_DATA_PATH);
+    });
+
+    it('should be able to return new data paths', function() {
+      const newDataPath = os.tmpdir();
+      storage.setDataPath(newDataPath);
+      const dataPath = storage.getDataPath();
+      m.chai.expect(dataPath).to.equal(newDataPath);
+    });
+
+  });
+
   describe('.get()', function() {
 
     it('should yield an error if no key', function(done) {
@@ -111,11 +166,11 @@ describe('Electron JSON Storage', function() {
     describe('given the user data path does not exist', function() {
 
       beforeEach(function(done) {
-        rimraf(utils.getUserDataPath(), done);
+        rimraf(storage.getDataPath(), done);
       });
 
       afterEach(function(done) {
-        mkdirp(utils.getUserDataPath(), done);
+        mkdirp(storage.getDataPath(), done);
       });
 
       it('should return an empty object for any key', function(done) {
@@ -128,7 +183,70 @@ describe('Electron JSON Storage', function() {
 
     });
 
-    describe('given stored keys with a colon', function () {
+    describe('given the same key stored in multiple data paths', function(done) {
+
+      beforeEach(function(done) {
+        this.newDataPath = path.join(os.tmpdir(), 'electron-json-storage');
+        const self = this;
+
+        async.waterfall([
+          function(callback) {
+            storage.setDataPath(self.newDataPath)
+            callback()
+          },
+          function(callback) {
+            storage.set('foo', { location: 'new' }, callback);
+          },
+          function(callback) {
+            storage.setDataPath(utils.DEFAULT_DATA_PATH)
+            callback()
+          },
+          function(callback) {
+            storage.set('foo', { location: 'default' }, callback);
+          }
+        ], done);
+      });
+
+      it('should initially return the key in the default location', function(done) {
+        storage.get('foo', function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            location: 'default'
+          });
+
+          done();
+        });
+      })
+
+      it('should return the new value given the right data path', function(done) {
+        storage.setDataPath(this.newDataPath);
+        storage.get('foo', function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            location: 'new'
+          });
+
+          done();
+        });
+      })
+
+      it('should return nothing given the wrong data path', function(done) {
+        if (os.platform() === 'win32') {
+          storage.setDataPath('C:\\electron-json-storage');
+        } else {
+          storage.setDataPath('/electron-json-storage');
+        }
+
+        storage.get('foo', function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({});
+          done();
+        });
+      })
+
+    })
+
+    describe('given stored keys with a colon', function() {
 
       beforeEach(function(done) {
         async.parallel([
@@ -137,7 +255,7 @@ describe('Electron JSON Storage', function() {
         ], done);
       });
 
-      it('should return all stored keys', function (done) {
+      it('should return all stored keys', function(done) {
         storage.getAll(function(error, data) {
           m.chai.expect(error).to.not.exist;
           m.chai.expect(data).to.deep.equal({
@@ -290,35 +408,14 @@ describe('Electron JSON Storage', function() {
 
   describe('.getAll()', function() {
 
-    const newpath = path.join(utils.getUserDataPath(), "newfolder");
-
-    beforeEach(function(done) {
-      async.waterfall( [
-        async.asyncify(_.partial(utils.setUserDataPath, newpath)),
-        function (err,done) {
-          storage.clear("", done);
-        },
-        async.asyncify(_.partial(utils.setUserDataPath,"")),
-        function (err,done) {
-          storage.clear("", done);
-        },
-      ], done);
-    });
-
-    afterEach(function (done) {
-      async.waterfall( [
-        async.asyncify(_.partial(utils.setUserDataPath))
-      ], done);
-    });
-
     describe('given the user data path does not exist', function() {
 
       beforeEach(function(done) {
-        rimraf(utils.getUserDataPath(), done);
+        rimraf(storage.getDataPath(), done);
       });
 
       afterEach(function(done) {
-        mkdirp(utils.getUserDataPath(), done);
+        mkdirp(storage.getDataPath(), done);
       });
 
       it('should return an empty object', function(done) {
@@ -369,64 +466,63 @@ describe('Electron JSON Storage', function() {
 
     });
 
-    describe('given many stored keys in multiple directory', function() {
+    describe('given many stored keys in different data directories', function() {
 
       beforeEach(function(done) {
+        this.newDataPath = path.join(os.tmpdir(), 'electron-json-storage');
+        const self = this;
+
         async.parallel([
-          _.partial(storage.set, 'foo', { name: 'foo' }),
-          _.partial(storage.set, 'bar', { name: 'bar' }),
-        ], done);
-      });
-
-      it('should return only the keys stored in the current user directory', function(done) {
-
-        async.waterfall([
-          async.asyncify(_.partial(utils.setUserDataPath, newpath)),
-          function(err, done) {
-            storage.set('baz', { name: 'baz' }, done);
+          function(callback) {
+            storage.setDataPath(self.newDataPath);
+            callback();
           },
-          function (done) {
-            storage.getAll(function (error, data) {
-              m.chai.expect(error).to.not.exist;
-              m.chai.expect(data).to.deep.equal({
-                baz: { name: 'baz' }
-              });
-              done();
-            });
-          }
-        ], done);
-        });
-      });
-
-    describe('given many stored keys in multiple directory', function() {
-
-      beforeEach(function(done) {
-        async.parallel([
-          _.partial(storage.set, 'foo', { name: 'foo' }),
-          _.partial(storage.set, 'bar', { name: 'bar' }),
-        ], done);
-      });
-
-      it('should return only the keys stored in the specified directory', function(done) {
-
-        async.waterfall([
-          async.asyncify(_.partial(utils.setUserDataPath, newpath)),
-          function(err, done) {
-            storage.set('baz', { name: 'baz' }, done);
+          function(callback) {
+            storage.set('foo', { name: 'foo' }, callback);
           },
-          async.asyncify(_.partial(utils.setUserDataPath)),
-          function (err, done) {
-            storage.getAll(newpath, function (error, data) {
-              m.chai.expect(error).to.not.exist;
-              m.chai.expect(data).to.deep.equal({
-                baz: { name: 'baz' }
-              });
-              done();
-            });
+          function(callback) {
+            storage.set('bar', { name: 'bar' }, callback);
+          },
+          function(callback) {
+            storage.setDataPath(utils.DEFAULT_DATA_PATH);
+            callback();
+          },
+          function(callback) {
+            storage.set('baz', { name: 'baz' }, callback);
           }
         ], done);
       });
+
+      it('should return all stored keys depending on the data path', function(done) {
+        storage.setDataPath(this.newDataPath);
+
+        async.waterfall([
+          storage.getAll,
+          function(keys, callback) {
+            m.chai.expect(keys).to.deep.equal({
+              foo: { name: 'foo' },
+              bar: { name: 'bar' }
+            });
+
+            callback();
+          },
+          function(callback) {
+            storage.setDataPath(utils.DEFAULT_DATA_PATH);
+            callback();
+          },
+          storage.getAll,
+          function(keys, callback) {
+            m.chai.expect(keys).to.deep.equal({
+              baz: { name: 'baz' }
+            });
+
+            callback();
+          },
+        ], done);
+      });
+
     });
+
   });
 
   describe('.set()', function() {
@@ -658,14 +754,6 @@ describe('Electron JSON Storage', function() {
 
   describe('.keys()', function() {
 
-    beforeEach(function () {
-      utils.setUserDataPath();
-    });
-
-    afterEach(function () {
-      utils.setUserDataPath();
-    });
-
     describe('given a file name with colons', function() {
 
       beforeEach(function(done) {
@@ -677,7 +765,7 @@ describe('Electron JSON Storage', function() {
       });
 
       afterEach(function(done) {
-        rimraf(utils.getUserDataPath(), done);
+        rimraf(storage.getDataPath(), done);
       });
 
       it('should correctly decode the file names', function(done) {
@@ -703,12 +791,12 @@ describe('Electron JSON Storage', function() {
           _.partial(storage.set, 'one', 'foo'),
           _.partial(storage.set, 'two', 'bar'),
           _.partial(storage.set, 'three', 'baz'),
-          _.partial(fs.writeFile, path.join(utils.getUserDataPath(), '.DS_Store'), 'foo')
+          _.partial(fs.writeFile, path.join(storage.getDataPath(), '.DS_Store'), 'foo')
         ], done);
       });
 
       afterEach(function(done) {
-        rimraf(utils.getUserDataPath(), done);
+        rimraf(storage.getDataPath(), done);
       });
 
       it('should onlt include the json files', function(done) {
@@ -919,7 +1007,7 @@ describe('Electron JSON Storage', function() {
           });
         };
 
-        const userDataPath = utils.getUserDataPath();
+        const userDataPath = storage.getDataPath();
 
         async.waterfall([
           _.partial(isDirectory, userDataPath),

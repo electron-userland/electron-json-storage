@@ -28,54 +28,50 @@ const m = require('mochainon');
 const path = require('path');
 const utils = require('../lib/utils');
 const electron = require('electron');
+const os = require('os');
+const app = electron.app || electron.remote.app;
 
 describe('Utils', function() {
 
   this.timeout(20000);
 
-  describe('.getUserDataPath()', function() {
+  describe('.getDataPath()', function() {
 
     it('should return an absolute path', function() {
-      m.chai.expect(path.isAbsolute(utils.getUserDataPath())).to.be.true;
+      m.chai.expect(path.isAbsolute(utils.getDataPath())).to.be.true;
     });
 
      it('should equal the dirname of the path returned by getFileName()', function() {
        const fileName = utils.getFileName('foo');
-       const userDataPath = utils.getUserDataPath();
+       const userDataPath = utils.getDataPath();
        m.chai.expect(path.dirname(fileName)).to.equal(userDataPath);
      });
 
   });
 
-  describe('.setUserDataPath()', function() {
+  describe('.setDataPath()', function() {
 
     beforeEach(function() {
-      utils.setUserDataPath();
+      utils.setDataPath(utils.DEFAULT_DATA_PATH);
     });
 
-    it('should reset to default path with default argument', function() {
-      const app = electron.app || electron.remote.app;
-      utils.setUserDataPath();
-      m.chai.expect(utils.getUserDataPath()).to.equal(path.join(app.getPath('userData'), 'storage'));
+    it('should be able to go back to the default', function() {
+      utils.setDataPath(path.join(os.tmpdir(), 'foo'));
+      m.chai.expect(utils.getDataPath()).to.not.equal(utils.DEFAULT_DATA_PATH);
+      utils.setDataPath(utils.DEFAULT_DATA_PATH);
+      m.chai.expect(utils.getDataPath()).to.equal(utils.DEFAULT_DATA_PATH);
     });
 
-    it('should change the path used correctly', function() {
-      const newpath = path.join(utils.getUserDataPath(), "foo/bar");
-      utils.setUserDataPath(newpath);
-      m.chai.expect(utils.getUserDataPath()).to.equal(newpath);
+    it('should change the user data path', function() {
+      const newUserDataPath = path.join(utils.getDataPath(), 'foo' , 'bar');
+      utils.setDataPath(newUserDataPath);
+      m.chai.expect(utils.getDataPath()).to.equal(newUserDataPath);
     });
 
     it('should throw if path is not absolute', function() {
       m.chai.expect(function() {
-        utils.setUserDataPath("testpath/storage");
-      }).to.throw('Not an absolute directory');
-    });
-
-    it('should equal the dirname of the path returned by getFileName()', function() {
-      const newpath = path.join(utils.getUserDataPath(), "foo/bar");
-      utils.setUserDataPath(newpath);
-      const fileName = utils.getFileName('foo');
-      m.chai.expect(path.dirname(fileName)).to.equal(newpath);
+        utils.setDataPath('testpath/storage');
+      }).to.throw('The user data path should be an absolute directory');
     });
 
   });
@@ -125,10 +121,11 @@ describe('Utils', function() {
       m.chai.expect(path.basename(fileName)).to.equal('foo%3Fbar%3Abaz.json');
     });
 
-    it('should work with a different directory than the user', function() {
-      const newpath = path.join(utils.getUserDataPath(), "newpath");
-      const fileName = utils.getFileName('foo?bar:baz', newpath);
-      m.chai.expect(path.dirname(fileName)).to.equal(newpath);
+    it('should react to user data path changes', function() {
+      const newUserDataPath = path.join(utils.getDataPath(), 'foo' , 'bar');
+      utils.setDataPath(newUserDataPath);
+      const fileName = utils.getFileName('foo');
+      m.chai.expect(path.dirname(fileName)).to.equal(newUserDataPath);
     });
 
   });
