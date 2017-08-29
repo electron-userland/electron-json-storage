@@ -32,6 +32,7 @@ Documentation
 
 
 * [storage](#module_storage)
+    * [.DEFAULT_DATA_PATH](#module_storage.DEFAULT_DATA_PATH) : <code>String</code>
     * [.setDataPath(directory)](#module_storage.setDataPath)
     * [.getDataPath()](#module_storage.getDataPath) ⇒ <code>String</code>
     * [.get(key, callback)](#module_storage.get)
@@ -43,9 +44,16 @@ Documentation
     * [.remove(key, callback)](#module_storage.remove)
     * [.clear(callback)](#module_storage.clear)
 
+<a name="module_storage.DEFAULT_DATA_PATH"></a>
+
+### storage.DEFAULT_DATA_PATH : <code>String</code>
+**Kind**: static constant of <code>[storage](#module_storage)</code>  
+**Summary**: The default data path  
 <a name="module_storage.setDataPath"></a>
 
 ### storage.setDataPath(directory)
+The default data path is stored in `storage.DEFAULT_DATA_PATH`.
+
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Set current data path  
 **Access:** public  
