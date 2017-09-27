@@ -121,6 +121,12 @@ describe('Utils', function() {
       m.chai.expect(path.basename(fileName)).to.equal('foo%3Fbar%3Abaz.json');
     });
 
+    // HTTP encoding doesn't help us here
+    it('should replace asterisks with hyphens', function() {
+      const fileName = utils.getFileName('john6638@gmail*dot*com');
+      m.chai.expect(path.basename(fileName)).to.equal('john6638%40gmail-dot-com.json');
+    });
+
     it('should react to user data path changes', function() {
       const newUserDataPath = path.join(utils.getDataPath(), 'foo' , 'bar');
       utils.setDataPath(newUserDataPath);
