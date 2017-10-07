@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.2.0] - 2017-10-07
+
+### Added
+
+- Add `dataPath` options to every function.
+
 ## [3.1.1] - 2017-09-27
 
 ### Changed
@@ -115,6 +121,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[3.2.0]: https://github.com/electron-userland/electron-json-storage/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/electron-userland/electron-json-storage/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/electron-userland/electron-json-storage/compare/v3.0.7...v3.1.0
 [3.0.7]: https://github.com/electron-userland/electron-json-storage/compare/v3.0.6...v3.0.7
