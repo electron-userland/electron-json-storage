@@ -35,14 +35,14 @@ Documentation
     * [.DEFAULT_DATA_PATH](#module_storage.DEFAULT_DATA_PATH) : <code>String</code>
     * [.setDataPath(directory)](#module_storage.setDataPath)
     * [.getDataPath()](#module_storage.getDataPath) ⇒ <code>String</code>
-    * [.get(key, callback)](#module_storage.get)
-    * [.getMany(keys, callback)](#module_storage.getMany)
-    * [.getAll(callback)](#module_storage.getAll)
-    * [.set(key, json, callback)](#module_storage.set)
-    * [.has(key, callback)](#module_storage.has)
-    * [.keys(callback)](#module_storage.keys)
-    * [.remove(key, callback)](#module_storage.remove)
-    * [.clear(callback)](#module_storage.clear)
+    * [.get(key, [options], callback)](#module_storage.get)
+    * [.getMany(keys, [options], callback)](#module_storage.getMany)
+    * [.getAll([options], callback)](#module_storage.getAll)
+    * [.set(key, json, [options], callback)](#module_storage.set)
+    * [.has(key, [options], callback)](#module_storage.has)
+    * [.keys([options], callback)](#module_storage.keys)
+    * [.remove(key, [options], callback)](#module_storage.remove)
+    * [.clear([options], callback)](#module_storage.clear)
 
 <a name="module_storage.DEFAULT_DATA_PATH"></a>
 
@@ -88,7 +88,7 @@ console.log(dataPath);
 ```
 <a name="module_storage.get"></a>
 
-### storage.get(key, callback)
+### storage.get(key, [options], callback)
 If the key doesn't exist in the user data, an empty object is returned.
 Also notice that the `.json` extension is added automatically, but it's
 ignored if you pass it yourself.
@@ -104,6 +104,8 @@ called `foo.data.json`.
 | Param | Type | Description |
 | --- | --- | --- |
 | key | <code>String</code> | key |
+| [options] | <code>Object</code> | options |
+| [options.dataPath] | <code>String</code> | data path |
 | callback | <code>function</code> | callback (error, data) |
 
 **Example**  
@@ -118,7 +120,7 @@ storage.get('foobar', function(error, data) {
 ```
 <a name="module_storage.getMany"></a>
 
-### storage.getMany(keys, callback)
+### storage.getMany(keys, [options], callback)
 This function returns an object with the data of all the passed keys.
 If one of the keys doesn't exist, an empty object is returned for it.
 
@@ -129,6 +131,8 @@ If one of the keys doesn't exist, an empty object is returned for it.
 | Param | Type | Description |
 | --- | --- | --- |
 | keys | <code>Array.&lt;String&gt;</code> | keys |
+| [options] | <code>Object</code> | options |
+| [options.dataPath] | <code>String</code> | data path |
 | callback | <code>function</code> | callback (error, data) |
 
 **Example**  
@@ -144,7 +148,7 @@ storage.getMany([ 'foobar', 'barbaz' ], function(error, data) {
 ```
 <a name="module_storage.getAll"></a>
 
-### storage.getAll(callback)
+### storage.getAll([options], callback)
 This function returns an empty object if there is no data to be read.
 
 **Kind**: static method of <code>[storage](#module_storage)</code>  
@@ -153,6 +157,8 @@ This function returns an empty object if there is no data to be read.
 
 | Param | Type | Description |
 | --- | --- | --- |
+| [options] | <code>Object</code> | options |
+| [options.dataPath] | <code>String</code> | data path |
 | callback | <code>function</code> | callback (error, data) |
 
 **Example**  
@@ -167,7 +173,7 @@ storage.getAll(function(error, data) {
 ```
 <a name="module_storage.set"></a>
 
-### storage.set(key, json, callback)
+### storage.set(key, json, [options], callback)
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Write user data  
 **Access:** public  
@@ -176,6 +182,8 @@ storage.getAll(function(error, data) {
 | --- | --- | --- |
 | key | <code>String</code> | key |
 | json | <code>Object</code> | json object |
+| [options] | <code>Object</code> | options |
+| [options.dataPath] | <code>String</code> | data path |
 | callback | <code>function</code> | callback (error) |
 
 **Example**  
@@ -188,7 +196,7 @@ storage.set('foobar', { foo: 'bar' }, function(error) {
 ```
 <a name="module_storage.has"></a>
 
-### storage.has(key, callback)
+### storage.has(key, [options], callback)
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Check if a key exists  
 **Access:** public  
@@ -196,6 +204,8 @@ storage.set('foobar', { foo: 'bar' }, function(error) {
 | Param | Type | Description |
 | --- | --- | --- |
 | key | <code>String</code> | key |
+| [options] | <code>Object</code> | options |
+| [options.dataPath] | <code>String</code> | data path |
 | callback | <code>function</code> | callback (error, hasKey) |
 
 **Example**  
@@ -212,13 +222,15 @@ storage.has('foobar', function(error, hasKey) {
 ```
 <a name="module_storage.keys"></a>
 
-### storage.keys(callback)
+### storage.keys([options], callback)
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Get the list of saved keys  
 **Access:** public  
 
 | Param | Type | Description |
 | --- | --- | --- |
+| [options] | <code>Object</code> | options |
+| [options.dataPath] | <code>String</code> | data path |
 | callback | <code>function</code> | callback (error, keys) |
 
 **Example**  
@@ -235,7 +247,7 @@ storage.keys(function(error, keys) {
 ```
 <a name="module_storage.remove"></a>
 
-### storage.remove(key, callback)
+### storage.remove(key, [options], callback)
 Notice this function does nothing, nor throws any error
 if the key doesn't exist.
 
@@ -246,6 +258,8 @@ if the key doesn't exist.
 | Param | Type | Description |
 | --- | --- | --- |
 | key | <code>String</code> | key |
+| [options] | <code>Object</code> | options |
+| [options.dataPath] | <code>String</code> | data path |
 | callback | <code>function</code> | callback (error) |
 
 **Example**  
@@ -258,13 +272,15 @@ storage.remove('foobar', function(error) {
 ```
 <a name="module_storage.clear"></a>
 
-### storage.clear(callback)
+### storage.clear([options], callback)
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Clear all stored data in the current user data path  
 **Access:** public  
 
 | Param | Type | Description |
 | --- | --- | --- |
+| [options] | <code>Object</code> | options |
+| [options.dataPath] | <code>String</code> | data path |
 | callback | <code>function</code> | callback (error) |
 
 **Example**  

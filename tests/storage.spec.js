@@ -87,7 +87,7 @@ describe('Electron JSON Storage', function() {
 
     it('should be a string', function() {
       m.chai.expect(_.isString(storage.DEFAULT_DATA_PATH)).to.be.true;
-    })
+    });
 
     it('should be an absolute path', function() {
       m.chai.expect(path.isAbsolute(storage.DEFAULT_DATA_PATH)).to.be.true;
@@ -102,21 +102,21 @@ describe('Electron JSON Storage', function() {
       storage.setDataPath(newDataPath);
       const dataPath = storage.getDataPath();
       m.chai.expect(dataPath).to.equal(newDataPath);
-    })
+    });
 
     it('should throw given no path', function() {
       m.chai.expect(function() {
         storage.setDataPath();
       }).to.throw('Invalid data path: undefined');
-    })
+    });
 
     it('should throw given a relative path', function() {
       m.chai.expect(function() {
         storage.setDataPath('foo');
       }).to.throw('The user data path should be an absolute directory');
-    })
+    });
 
-  })
+  });
 
   describe('.getDataPath()', function() {
 
@@ -191,15 +191,15 @@ describe('Electron JSON Storage', function() {
 
         async.waterfall([
           function(callback) {
-            storage.setDataPath(self.newDataPath)
-            callback()
+            storage.setDataPath(self.newDataPath);
+            callback();
           },
           function(callback) {
             storage.set('foo', { location: 'new' }, callback);
           },
           function(callback) {
-            storage.setDataPath(utils.DEFAULT_DATA_PATH)
-            callback()
+            storage.setDataPath(utils.DEFAULT_DATA_PATH);
+            callback();
           },
           function(callback) {
             storage.set('foo', { location: 'default' }, callback);
@@ -216,7 +216,7 @@ describe('Electron JSON Storage', function() {
 
           done();
         });
-      })
+      });
 
       it('should return the new value given the right data path', function(done) {
         storage.setDataPath(this.newDataPath);
@@ -228,7 +228,7 @@ describe('Electron JSON Storage', function() {
 
           done();
         });
-      })
+      });
 
       it('should return nothing given the wrong data path', function(done) {
         if (os.platform() === 'win32') {
@@ -242,9 +242,9 @@ describe('Electron JSON Storage', function() {
           m.chai.expect(data).to.deep.equal({});
           done();
         });
-      })
+      });
 
-    })
+    });
 
     describe('given stored keys with a colon', function() {
 
@@ -351,6 +351,43 @@ describe('Electron JSON Storage', function() {
   });
 
   describe('.getMany()', function() {
+
+    describe('given many stored keys in a custom data path', function() {
+
+      beforeEach(function(done) {
+        this.dataPath = os.tmpdir();
+        async.parallel([
+          _.partial(storage.set, 'foo', { name: 'foo' }, { dataPath: this.dataPath }),
+          _.partial(storage.set, 'bar', { name: 'bar' }, { dataPath: this.dataPath }),
+          _.partial(storage.set, 'baz', { name: 'baz' }, { dataPath: this.dataPath })
+        ], done);
+      });
+
+      it('should return nothing given the wrong data path', function(done) {
+        storage.getMany([ 'foo', 'baz' ], function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            foo: {},
+            baz: {}
+          });
+          done();
+        });
+      });
+
+      it('should return the values given the correct data path', function(done) {
+        storage.getMany([ 'foo', 'baz' ], {
+          dataPath: this.dataPath
+        }, function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            foo: { name: 'foo' },
+            baz: { name: 'baz' }
+          });
+          done();
+        });
+      });
+
+    });
 
     describe('given many stored keys', function() {
 
@@ -459,6 +496,45 @@ describe('Electron JSON Storage', function() {
             foo: { name: 'foo' },
             bar: { name: 'bar' },
             baz: { name: 'baz' }
+          });
+          done();
+        });
+      });
+
+    });
+
+    describe('given many stored keys in different locations', function() {
+
+      beforeEach(function(done) {
+        this.dataPath = path.join(os.tmpdir(), 'hello');
+
+        async.parallel([
+          _.partial(storage.set, 'foo', { name: 'foo' }),
+          _.partial(storage.set, 'bar', { name: 'bar' }, {
+            dataPath: this.dataPath
+          }),
+          _.partial(storage.set, 'baz', { name: 'baz' })
+        ], done);
+      });
+
+      it('should return all stored keys in the default location', function(done) {
+        storage.getAll(function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            foo: { name: 'foo' },
+            baz: { name: 'baz' }
+          });
+          done();
+        });
+      });
+
+      it('should return all stored keys in a custom location', function(done) {
+        storage.getAll({
+          dataPath: this.dataPath
+        }, function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({
+            bar: { name: 'bar' }
           });
           done();
         });
@@ -585,6 +661,35 @@ describe('Electron JSON Storage', function() {
       ], function(error, data) {
         m.chai.expect(error).to.not.exist;
         m.chai.expect(data).to.deep.equal({ foo: 'baz' });
+        done();
+      });
+    });
+
+    it('should be able to store an object to a custom location', function(done) {
+      const newDataPath = os.tmpdir();
+
+      async.waterfall([
+        function(callback) {
+          storage.set('foo', { foo: 'baz' }, {
+            dataPath: newDataPath
+          }, callback);
+        },
+        function(callback) {
+          async.parallel({
+            newDataPath: function(callback) {
+              storage.get('foo', {
+                dataPath: newDataPath
+              }, callback);
+            },
+            oldDataPath: function(callback) {
+              storage.get('foo', callback);
+            }
+          }, callback);
+        }
+      ], function(error, results) {
+        m.chai.expect(error).to.not.exist;
+        m.chai.expect(results.newDataPath).to.deep.equal({ foo: 'baz' });
+        m.chai.expect(results.oldDataPath).to.deep.equal({});
         done();
       });
     });
@@ -718,6 +823,35 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    describe('given a stored key in a custom location', function() {
+
+      beforeEach(function(done) {
+        this.dataPath = os.tmpdir();
+        storage.set('foo', { foo: 'bar' }, {
+          dataPath: this.dataPath
+        }, done);
+      });
+
+      it('should yield false given the default data path', function(done) {
+        storage.has('foo', function(error, hasKey) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(hasKey).to.equal(false);
+          done();
+        });
+      });
+
+      it('should yield true given the custom data path', function(done) {
+        storage.has('foo', {
+          dataPath: this.dataPath
+        }, function(error, hasKey) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(hasKey).to.equal(true);
+          done();
+        });
+      });
+
+    });
+
     describe('given a stored key', function() {
 
       beforeEach(function(done) {
@@ -784,6 +918,40 @@ describe('Electron JSON Storage', function() {
 
     });
 
+    describe('given keys in a custom location', function() {
+
+      beforeEach(function(done) {
+        this.dataPath = path.join(os.tmpdir(), 'custom-data-path');
+        async.waterfall([
+          _.partial(storage.set, 'one', 'foo', { dataPath: this.dataPath }),
+          _.partial(storage.set, 'two', 'bar', { dataPath: this.dataPath }),
+          _.partial(storage.set, 'three', 'baz', { dataPath: this.dataPath })
+        ], done);
+      });
+
+      it('should return nothing given the default data path', function(done) {
+        storage.keys(function(error, keys) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(keys.length).to.equal(0);
+          done();
+        });
+      });
+
+      it('should return the keys given the custom location', function(done) {
+        storage.keys({
+          dataPath: this.dataPath
+        }, function(error, keys) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(keys.length).to.equal(3);
+          m.chai.expect(_.includes(keys, 'one')).to.be.true;
+          m.chai.expect(_.includes(keys, 'two')).to.be.true;
+          m.chai.expect(_.includes(keys, 'three')).to.be.true;
+          done();
+        });
+      });
+
+    });
+
     describe('given a .DS_Store file in the settings directory', function() {
 
       beforeEach(function(done) {
@@ -799,7 +967,7 @@ describe('Electron JSON Storage', function() {
         rimraf(storage.getDataPath(), done);
       });
 
-      it('should onlt include the json files', function(done) {
+      it('should only include the json files', function(done) {
         storage.keys(function(error, keys) {
           m.chai.expect(error).to.not.exist;
           m.chai.expect(keys.length).to.equal(3);
@@ -910,6 +1078,38 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    describe('given a stored key in a custom location', function() {
+
+      beforeEach(function(done) {
+        this.dataPath = os.tmpdir();
+        storage.set('foo', { foo: 'bar' }, { dataPath: this.dataPath }, done);
+      });
+
+      it('should be able to remove the key', function(done) {
+        var options = {
+          dataPath: this.dataPath
+        };
+
+        async.waterfall([
+          function(callback) {
+            storage.has('foo', options, callback);
+          },
+          function(hasKey, callback) {
+            m.chai.expect(hasKey).to.be.true;
+            storage.remove('foo', options, callback);
+          },
+          function(callback) {
+            storage.has('foo', options, callback);
+          }
+        ], function(error, hasKey) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(hasKey).to.be.false;
+          done();
+        });
+      });
+
+    });
+
     describe('given a stored key', function() {
 
       beforeEach(function(done) {
@@ -965,6 +1165,38 @@ describe('Electron JSON Storage', function() {
         m.chai.expect(error).to.not.exist;
         done();
       });
+    });
+
+    describe('given a stored key in a custom location', function() {
+
+      beforeEach(function(done) {
+        this.dataPath = os.tmpdir();
+        storage.set('foo', { foo: 'bar' }, { dataPath: this.dataPath }, done);
+      });
+
+      it('should clear the key', function(done) {
+        var options = {
+          dataPath: this.dataPath
+        };
+
+        async.waterfall([
+          function(callback) {
+            storage.has('foo', options, callback);
+          },
+          function(hasKey, callback) {
+            m.chai.expect(hasKey).to.be.true;
+            storage.clear(options, callback);
+          },
+          function(callback) {
+            storage.has('foo', options, callback);
+          }
+        ], function(error, hasKey) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(hasKey).to.be.false;
+          done();
+        });
+      });
+
     });
 
     describe('given a stored key', function() {
