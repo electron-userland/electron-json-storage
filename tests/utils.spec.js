@@ -134,6 +134,15 @@ describe('Utils', function() {
       m.chai.expect(path.dirname(fileName)).to.equal(newUserDataPath);
     });
 
+    it('should accept a custom data path', function() {
+      const dataPath = path.join('my', 'custom', 'data', 'path');
+      const fileName = utils.getFileName('foo', {
+        dataPath: dataPath
+      });
+
+      m.chai.expect(fileName).to.equal(path.join(dataPath, 'foo.json'));
+    });
+
   });
 
 });
