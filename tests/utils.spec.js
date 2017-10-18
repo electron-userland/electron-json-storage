@@ -41,25 +41,35 @@ describe('Utils', function() {
       m.chai.expect(path.isAbsolute(utils.getDataPath())).to.be.true;
     });
 
-     it('should equal the dirname of the path returned by getFileName()', function() {
-       const fileName = utils.getFileName('foo');
-       const userDataPath = utils.getDataPath();
-       m.chai.expect(path.dirname(fileName)).to.equal(userDataPath);
-     });
+    it('should equal the dirname of the path returned by getFileName()', function() {
+      const fileName = utils.getFileName('foo');
+      const userDataPath = utils.getDataPath();
+      m.chai.expect(path.dirname(fileName)).to.equal(userDataPath);
+    });
+
+    it('should pick up external changes to the userData path', function() {
+      utils.setDataPath(undefined);
+      const oldDataPath = app.getPath('userData');
+      m.chai.expect(utils.getDataPath().indexOf(oldDataPath)).to.equal(0);
+      const newPath = os.platform() === 'win32' ? 'C:\\foo' : '/foo';
+      app.setPath('userData', newPath);
+      m.chai.expect(utils.getDataPath().indexOf(newPath)).to.equal(0);
+      app.setPath('userData', oldDataPath);
+    });
 
   });
 
   describe('.setDataPath()', function() {
 
     beforeEach(function() {
-      utils.setDataPath(utils.DEFAULT_DATA_PATH);
+      utils.setDataPath(utils.getDefaultDataPath());
     });
 
     it('should be able to go back to the default', function() {
       utils.setDataPath(path.join(os.tmpdir(), 'foo'));
-      m.chai.expect(utils.getDataPath()).to.not.equal(utils.DEFAULT_DATA_PATH);
-      utils.setDataPath(utils.DEFAULT_DATA_PATH);
-      m.chai.expect(utils.getDataPath()).to.equal(utils.DEFAULT_DATA_PATH);
+      m.chai.expect(utils.getDataPath()).to.not.equal(utils.getDefaultDataPath());
+      utils.setDataPath(utils.getDefaultDataPath());
+      m.chai.expect(utils.getDataPath()).to.equal(utils.getDefaultDataPath());
     });
 
     it('should change the user data path', function() {

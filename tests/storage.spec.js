@@ -44,7 +44,7 @@ describe('Electron JSON Storage', function() {
 
   // Ensure each test case is always ran in a clean state
   beforeEach(function(done) {
-    storage.setDataPath(utils.DEFAULT_DATA_PATH);
+    storage.setDataPath(utils.getDefaultDataPath());
     storage.clear(done);
   });
 
@@ -83,14 +83,14 @@ describe('Electron JSON Storage', function() {
 
   });
 
-  describe('.DEFAULT_DATA_PATH', function() {
+  describe('.getDefaultDataPath()', function() {
 
     it('should be a string', function() {
-      m.chai.expect(_.isString(storage.DEFAULT_DATA_PATH)).to.be.true;
+      m.chai.expect(_.isString(storage.getDefaultDataPath())).to.be.true;
     });
 
     it('should be an absolute path', function() {
-      m.chai.expect(path.isAbsolute(storage.DEFAULT_DATA_PATH)).to.be.true;
+      m.chai.expect(path.isAbsolute(storage.getDefaultDataPath())).to.be.true;
     });
 
   });
@@ -104,10 +104,10 @@ describe('Electron JSON Storage', function() {
       m.chai.expect(dataPath).to.equal(newDataPath);
     });
 
-    it('should throw given no path', function() {
-      m.chai.expect(function() {
-        storage.setDataPath();
-      }).to.throw('Invalid data path: undefined');
+    it('should set the default path if no argument', function() {
+      storage.setDataPath();
+      const dataPath = app.getPath('userData');
+      m.chai.expect(storage.getDataPath().indexOf(dataPath)).to.equal(0);
     });
 
     it('should throw given a relative path', function() {
@@ -122,7 +122,7 @@ describe('Electron JSON Storage', function() {
 
     it('should initially return the default data path', function() {
       const dataPath = storage.getDataPath();
-      m.chai.expect(dataPath).to.equal(utils.DEFAULT_DATA_PATH);
+      m.chai.expect(dataPath).to.equal(utils.getDefaultDataPath());
     });
 
     it('should be able to return new data paths', function() {
@@ -198,7 +198,7 @@ describe('Electron JSON Storage', function() {
             storage.set('foo', { location: 'new' }, callback);
           },
           function(callback) {
-            storage.setDataPath(utils.DEFAULT_DATA_PATH);
+            storage.setDataPath(utils.getDefaultDataPath());
             callback();
           },
           function(callback) {
@@ -560,7 +560,7 @@ describe('Electron JSON Storage', function() {
             storage.set('bar', { name: 'bar' }, callback);
           },
           function(callback) {
-            storage.setDataPath(utils.DEFAULT_DATA_PATH);
+            storage.setDataPath(utils.getDefaultDataPath());
             callback();
           },
           function(callback) {
@@ -583,7 +583,7 @@ describe('Electron JSON Storage', function() {
             callback();
           },
           function(callback) {
-            storage.setDataPath(utils.DEFAULT_DATA_PATH);
+            storage.setDataPath(utils.getDefaultDataPath());
             callback();
           },
           storage.getAll,

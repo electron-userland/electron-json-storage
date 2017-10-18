@@ -32,7 +32,7 @@ Documentation
 
 
 * [storage](#module_storage)
-    * [.DEFAULT_DATA_PATH](#module_storage.DEFAULT_DATA_PATH) : <code>String</code>
+    * [.getDefaultDataPath()](#module_storage.getDefaultDataPath) ⇒ <code>String</code>
     * [.setDataPath(directory)](#module_storage.setDataPath)
     * [.getDataPath()](#module_storage.getDataPath) ⇒ <code>String</code>
     * [.get(key, [options], callback)](#module_storage.get)
@@ -44,15 +44,21 @@ Documentation
     * [.remove(key, [options], callback)](#module_storage.remove)
     * [.clear([options], callback)](#module_storage.clear)
 
-<a name="module_storage.DEFAULT_DATA_PATH"></a>
+<a name="module_storage.getDefaultDataPath"></a>
 
-### storage.DEFAULT_DATA_PATH : <code>String</code>
-**Kind**: static constant of <code>[storage](#module_storage)</code>  
-**Summary**: The default data path  
+### storage.getDefaultDataPath() ⇒ <code>String</code>
+**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Summary**: Get the default data path  
+**Returns**: <code>String</code> - default data path  
+**Access:** public  
+**Example**  
+```js
+const defaultDataPath = storage.getDefaultDataPath()
+```
 <a name="module_storage.setDataPath"></a>
 
 ### storage.setDataPath(directory)
-The default data path is stored in `storage.DEFAULT_DATA_PATH`.
+The default value will be used if the directory is undefined.
 
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Set current data path  
@@ -60,7 +66,7 @@ The default data path is stored in `storage.DEFAULT_DATA_PATH`.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| directory | <code>String</code> | directory |
+| directory | <code>String</code> &#124; <code>Undefined</code> | directory |
 
 **Example**  
 ```js
