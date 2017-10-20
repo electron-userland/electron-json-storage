@@ -3,11 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.2] - 2017-10-20
+
+### Changed
+
+- Ensure the `options` argument always defaults to an empty object.
+
 ## [4.0.1] - 2017-10-19
 
 ### Changed
 
-- Don't throw if the user don't pass a callback function.
+- Don't throw if the user doesn't pass a callback function.
 
 ## [4.0.0] - 2017-10-18
 
@@ -134,6 +140,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[4.0.2]: https://github.com/electron-userland/electron-json-storage/compare/v4.0.1...v4.0.2
 [4.0.1]: https://github.com/electron-userland/electron-json-storage/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/electron-userland/electron-json-storage/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/electron-userland/electron-json-storage/compare/v3.1.1...v3.2.0
