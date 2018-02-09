@@ -40,7 +40,7 @@ const app = electron.app || electron.remote.app;
 
 describe('Electron JSON Storage', function() {
 
-  this.timeout(20000);
+  // this.timeout(20000);
 
   // Ensure each test case is always ran in a clean state
   beforeEach(function(done) {
@@ -48,7 +48,7 @@ describe('Electron JSON Storage', function() {
     storage.clear(done);
   });
 
-  describe('stress testing', function() {
+  /* describe('stress testing', function() {
 
     const cases = _.times(1000, () => {
       return Math.floor(Math.random() * 100000);
@@ -81,7 +81,7 @@ describe('Electron JSON Storage', function() {
       }, done);
     });
 
-  });
+  }); */
 
   describe('.getDefaultDataPath()', function() {
 
@@ -792,6 +792,125 @@ describe('Electron JSON Storage', function() {
 
     });
 
+  });
+ 
+  describe('.watch()', function() {
+
+    // Help .watch() to detect storage changing by .set()
+    function help_detect_set(key, json, options, callback) {
+      if (_.isFunction(options)) {
+        callback = options;
+        options = {};
+      }
+
+      storage.set(key, json, options, function() {
+        setTimeout(function() {
+          callback();
+        }, 100);
+      });
+    }
+    
+    describe('given no stored key', function() {
+
+      beforeEach(function(done) {
+        storage.clear(done);
+      });
+
+      beforeEach(function() {
+        storage.watch('foo', (error, changes) => {
+          this.changes = changes;
+        });
+      });
+
+      it("should return an object with key 'new'(last stored) & 'old'(empty object)", function(done) {
+        async.waterfall([
+          function(callback) {
+            help_detect_set('foo', { name: 'foo' }, callback);
+          },
+        ], () => {
+          m.chai.expect(this.changes).to.deep.equal({
+            new: { name: 'foo' },
+            old: {},
+          });
+          done();
+        });
+      });
+
+      it("should return an object with key 'new'(last stored) & 'old'(prev stored)", function(done) {
+        async.waterfall([
+          function(callback) {
+            help_detect_set('foo', { name: 'foo' }, callback);
+          },
+          function(callback) {
+            help_detect_set('foo', { name: 'bar' }, callback);
+          },
+        ], () => {
+          m.chai.expect(this.changes).to.deep.equal({
+            new: { name: 'bar' },
+            old: { name: 'foo' },
+          });
+          done();
+        });
+      });
+
+    });
+
+    describe('given a stored key', function() {
+
+      beforeEach(function(done) {
+        storage.set('foo', { name: 'foobar' }, done);
+      });
+
+      beforeEach(function() {
+        storage.watch('foo', (error, changes) => {
+          this.changes = changes;
+        });
+      });
+
+      it("should return an object with key 'new'(last stored) & 'old'(prev stored)", function(done) {
+        async.waterfall([
+          function(callback) {
+            help_detect_set('foo', { name: 'foo' }, callback);
+          },
+        ], () => {
+          m.chai.expect(this.changes).to.deep.equal({
+            new: { name: 'foo' },
+            old: { name: 'foobar' },
+          });
+          done();
+        });
+      });
+    });
+
+    describe('given a stored key in a custom data path', function() {
+
+      beforeEach(function(done) {
+        this.dataPath = os.tmpdir();        
+        storage.set('foo', { name: 'foobar' }, { dataPath: this.dataPath }, done);
+      });
+
+      beforeEach(function() {
+        storage.watch('foo', { dataPath: this.dataPath }, (error, changes) => {
+          this.changes = changes;
+        });
+      });
+
+      it("should return an object with key 'new'(last stored) & 'old'(prev stored)", function(done) {
+        const options = { dataPath: this.dataPath };
+
+        async.waterfall([
+          function(callback) {
+            help_detect_set('foo', { name: 'foo' }, options, callback);
+          },
+        ], () => {
+          m.chai.expect(this.changes).to.deep.equal({
+            new: { name: 'foo' },
+            old: { name: 'foobar' },
+          });
+          done();
+        });
+      });
+    });
   });
 
   describe('.has()', function() {
