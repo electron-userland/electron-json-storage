@@ -39,6 +39,7 @@ Documentation
     * [.getMany(keys, [options], callback)](#module_storage.getMany)
     * [.getAll([options], callback)](#module_storage.getAll)
     * [.set(key, json, [options], callback)](#module_storage.set)
+    * [.watch(key, [options], callback)](#module_storage.watch)
     * [.has(key, [options], callback)](#module_storage.has)
     * [.keys([options], callback)](#module_storage.keys)
     * [.remove(key, [options], callback)](#module_storage.remove)
@@ -70,16 +71,12 @@ The default value will be used if the directory is undefined.
 
 **Example**  
 ```js
-const os = require('os');
-const storage = require('electron-json-storage');
-
-storage.setDataPath(os.tmpdir());
+const os = require('os');const storage = require('electron-json-storage');storage.setDataPath(os.tmpdir());
 ```
 <a name="module_storage.getDataPath"></a>
 
 ### storage.getDataPath() ⇒ <code>String</code>
-Returns the current data path. It defaults to a directory called
-"storage" inside Electron's `userData` path.
+Returns the current data path. It defaults to a directory called"storage" inside Electron's `userData` path.
 
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Get current user data path  
@@ -87,21 +84,12 @@ Returns the current data path. It defaults to a directory called
 **Access:** public  
 **Example**  
 ```js
-const storage = require('electron-json-storage');
-
-const dataPath = storage.getDataPath();
-console.log(dataPath);
+const storage = require('electron-json-storage');const dataPath = storage.getDataPath();console.log(dataPath);
 ```
 <a name="module_storage.get"></a>
 
 ### storage.get(key, [options], callback)
-If the key doesn't exist in the user data, an empty object is returned.
-Also notice that the `.json` extension is added automatically, but it's
-ignored if you pass it yourself.
-
-Passing an extension other than `.json` will result in a file created
-with both extensions. For example, the key `foo.data` will result in a file
-called `foo.data.json`.
+If the key doesn't exist in the user data, an empty object is returned.Also notice that the `.json` extension is added automatically, but it'signored if you pass it yourself.Passing an extension other than `.json` will result in a file createdwith both extensions. For example, the key `foo.data` will result in a filecalled `foo.data.json`.
 
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Read user data  
@@ -116,19 +104,12 @@ called `foo.data.json`.
 
 **Example**  
 ```js
-const storage = require('electron-json-storage');
-
-storage.get('foobar', function(error, data) {
-  if (error) throw error;
-
-  console.log(data);
-});
+const storage = require('electron-json-storage');storage.get('foobar', function(error, data) {  if (error) throw error;  console.log(data);});
 ```
 <a name="module_storage.getMany"></a>
 
 ### storage.getMany(keys, [options], callback)
-This function returns an object with the data of all the passed keys.
-If one of the keys doesn't exist, an empty object is returned for it.
+This function returns an object with the data of all the passed keys.If one of the keys doesn't exist, an empty object is returned for it.
 
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Read many user data keys  
@@ -143,14 +124,7 @@ If one of the keys doesn't exist, an empty object is returned for it.
 
 **Example**  
 ```js
-const storage = require('electron-json-storage');
-
-storage.getMany([ 'foobar', 'barbaz' ], function(error, data) {
-  if (error) throw error;
-
-  console.log(data.foobar);
-  console.log(data.barbaz);
-});
+const storage = require('electron-json-storage');storage.getMany([ 'foobar', 'barbaz' ], function(error, data) {  if (error) throw error;  console.log(data.foobar);  console.log(data.barbaz);});
 ```
 <a name="module_storage.getAll"></a>
 
@@ -169,13 +143,7 @@ This function returns an empty object if there is no data to be read.
 
 **Example**  
 ```js
-const storage = require('electron-json-storage');
-
-storage.getAll(function(error, data) {
-  if (error) throw error;
-
-  console.log(data);
-});
+const storage = require('electron-json-storage');storage.getAll(function(error, data) {  if (error) throw error;  console.log(data);});
 ```
 <a name="module_storage.set"></a>
 
@@ -194,11 +162,27 @@ storage.getAll(function(error, data) {
 
 **Example**  
 ```js
-const storage = require('electron-json-storage');
+const storage = require('electron-json-storage');storage.set('foobar', { foo: 'bar' }, function(error) {  if (error) throw error;});
+```
+<a name="module_storage.watch"></a>
 
-storage.set('foobar', { foo: 'bar' }, function(error) {
-  if (error) throw error;
-});
+### storage.watch(key, [options], callback)
+If the user data is changed, an object with the old data and the changed data is returned
+
+**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Summary**: Watch user data changes  
+**Access:** public  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| key | <code>String</code> | key |
+| [options] | <code>Object</code> | options |
+| [options.dataPath] | <code>String</code> | data path |
+| callback | <code>function</code> | callback (error, changes) |
+
+**Example**  
+```js
+const storage = require('electron-json-storage');storage.watch('foobar', function(error, changes) {  if (error) throw error;  console.log(changes.old);  console.log(changes.new);});
 ```
 <a name="module_storage.has"></a>
 
@@ -216,15 +200,7 @@ storage.set('foobar', { foo: 'bar' }, function(error) {
 
 **Example**  
 ```js
-const storage = require('electron-json-storage');
-
-storage.has('foobar', function(error, hasKey) {
-  if (error) throw error;
-
-  if (hasKey) {
-    console.log('There is data stored as `foobar`');
-  }
-});
+const storage = require('electron-json-storage');storage.has('foobar', function(error, hasKey) {  if (error) throw error;  if (hasKey) {    console.log('There is data stored as `foobar`');  }});
 ```
 <a name="module_storage.keys"></a>
 
@@ -241,21 +217,12 @@ storage.has('foobar', function(error, hasKey) {
 
 **Example**  
 ```js
-const storage = require('electron-json-storage');
-
-storage.keys(function(error, keys) {
-  if (error) throw error;
-
-  for (var key of keys) {
-    console.log('There is a key called: ' + key);
-  }
-});
+const storage = require('electron-json-storage');storage.keys(function(error, keys) {  if (error) throw error;  for (var key of keys) {    console.log('There is a key called: ' + key);  }});
 ```
 <a name="module_storage.remove"></a>
 
 ### storage.remove(key, [options], callback)
-Notice this function does nothing, nor throws any error
-if the key doesn't exist.
+Notice this function does nothing, nor throws any errorif the key doesn't exist.
 
 **Kind**: static method of <code>[storage](#module_storage)</code>  
 **Summary**: Remove a key  
@@ -270,11 +237,7 @@ if the key doesn't exist.
 
 **Example**  
 ```js
-const storage = require('electron-json-storage');
-
-storage.remove('foobar', function(error) {
-  if (error) throw error;
-});
+const storage = require('electron-json-storage');storage.remove('foobar', function(error) {  if (error) throw error;});
 ```
 <a name="module_storage.clear"></a>
 
@@ -291,11 +254,7 @@ storage.remove('foobar', function(error) {
 
 **Example**  
 ```js
-const storage = require('electron-json-storage');
-
-storage.clear(function(error) {
-  if (error) throw error;
-});
+const storage = require('electron-json-storage');storage.clear(function(error) {  if (error) throw error;});
 ```
 
 Support
