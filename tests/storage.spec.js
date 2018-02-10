@@ -40,7 +40,7 @@ const app = electron.app || electron.remote.app;
 
 describe('Electron JSON Storage', function() {
 
-  // this.timeout(20000);
+  this.timeout(20000);
 
   // Ensure each test case is always ran in a clean state
   beforeEach(function(done) {
@@ -48,7 +48,7 @@ describe('Electron JSON Storage', function() {
     storage.clear(done);
   });
 
-  /* describe('stress testing', function() {
+  describe('stress testing', function() {
 
     const cases = _.times(1000, () => {
       return Math.floor(Math.random() * 100000);
@@ -81,7 +81,7 @@ describe('Electron JSON Storage', function() {
       }, done);
     });
 
-  }); */
+  });
 
   describe('.getDefaultDataPath()', function() {
 
@@ -803,9 +803,9 @@ describe('Electron JSON Storage', function() {
         options = {};
       }
 
-      storage.set(key, json, options, function() {
+      storage.set(key, json, options, function(error) {
         setTimeout(function() {
-          callback();
+          callback(error);
         }, 100);
       });
     }
@@ -823,11 +823,8 @@ describe('Electron JSON Storage', function() {
       });
 
       it("should return an object with key 'new'(last stored) & 'old'(empty object)", function(done) {
-        async.waterfall([
-          function(callback) {
-            help_detect_set('foo', { name: 'foo' }, callback);
-          },
-        ], () => {
+        help_detect_set('foo', { name: 'foo' }, (error) => {
+          m.chai.expect(error).to.not.exist;
           m.chai.expect(this.changes).to.deep.equal({
             new: { name: 'foo' },
             old: {},
@@ -844,7 +841,8 @@ describe('Electron JSON Storage', function() {
           function(callback) {
             help_detect_set('foo', { name: 'bar' }, callback);
           },
-        ], () => {
+        ], (error) => {
+          m.chai.expect(error).to.not.exist;
           m.chai.expect(this.changes).to.deep.equal({
             new: { name: 'bar' },
             old: { name: 'foo' },
@@ -868,11 +866,8 @@ describe('Electron JSON Storage', function() {
       });
 
       it("should return an object with key 'new'(last stored) & 'old'(prev stored)", function(done) {
-        async.waterfall([
-          function(callback) {
-            help_detect_set('foo', { name: 'foo' }, callback);
-          },
-        ], () => {
+        help_detect_set('foo', { name: 'foo' }, (error) => {
+          m.chai.expect(error).to.not.exist;
           m.chai.expect(this.changes).to.deep.equal({
             new: { name: 'foo' },
             old: { name: 'foobar' },
@@ -880,12 +875,13 @@ describe('Electron JSON Storage', function() {
           done();
         });
       });
+
     });
 
     describe('given a stored key in a custom data path', function() {
 
       beforeEach(function(done) {
-        this.dataPath = os.tmpdir();        
+        this.dataPath = os.tmpdir();
         storage.set('foo', { name: 'foobar' }, { dataPath: this.dataPath }, done);
       });
 
@@ -896,13 +892,8 @@ describe('Electron JSON Storage', function() {
       });
 
       it("should return an object with key 'new'(last stored) & 'old'(prev stored)", function(done) {
-        const options = { dataPath: this.dataPath };
-
-        async.waterfall([
-          function(callback) {
-            help_detect_set('foo', { name: 'foo' }, options, callback);
-          },
-        ], () => {
+        help_detect_set('foo', { name: 'foo' }, { dataPath: this.dataPath }, (error) => {
+          m.chai.expect(error).to.not.exist;
           m.chai.expect(this.changes).to.deep.equal({
             new: { name: 'foo' },
             old: { name: 'foobar' },
@@ -910,6 +901,7 @@ describe('Electron JSON Storage', function() {
           done();
         });
       });
+
     });
   });
 
