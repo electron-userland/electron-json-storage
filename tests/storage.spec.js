@@ -725,6 +725,22 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should accept spaces in the key name', function(done){
+        const key = 'foo bar baz';
+        async.waterfall([
+          function(callback) {
+            storage.set(key, { foo: 'baz' }, callback);
+          },
+          function(callback) {
+            storage.get(key, callback);
+          }
+        ], function(error, data) {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(data).to.deep.equal({ foo: 'baz' });
+          done();
+        });
+    });
+
     describe('given an existing stored key', function() {
 
       beforeEach(function(done) {
