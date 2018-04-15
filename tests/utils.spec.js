@@ -137,6 +137,11 @@ describe('Utils', function() {
       m.chai.expect(path.basename(fileName)).to.equal('john6638%40gmail-dot-com.json');
     });
 
+    it('should allow spaces in file names', function() {
+      const fileName = utils.getFileName('foo bar');
+      m.chai.expect(path.basename(fileName)).to.equal('foo bar.json');
+    });
+
     it('should react to user data path changes', function() {
       const newUserDataPath = path.join(utils.getDataPath(), 'foo' , 'bar');
       utils.setDataPath(newUserDataPath);
