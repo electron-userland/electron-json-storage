@@ -809,6 +809,117 @@ describe('Electron JSON Storage', function() {
     });
 
   });
+ 
+  describe('.watch()', function() {
+
+    // Help .watch() to detect storage changing by .set()
+    function help_detect_set(key, json, options, callback) {
+      if (_.isFunction(options)) {
+        callback = options;
+        options = {};
+      }
+
+      storage.set(key, json, options, function(error) {
+        setTimeout(function() {
+          callback(error);
+        }, 100);
+      });
+    }
+    
+    describe('given no stored key', function() {
+
+      beforeEach(function(done) {
+        storage.clear(done);
+      });
+
+      beforeEach(function() {
+        storage.watch('foo', (error, changes) => {
+          this.changes = changes;
+        });
+      });
+
+      it("should return an object with key 'new'(last stored) & 'old'(empty object)", function(done) {
+        help_detect_set('foo', { name: 'foo' }, (error) => {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(this.changes).to.deep.equal({
+            new: { name: 'foo' },
+            old: {},
+          });
+          done();
+        });
+      });
+
+      it("should return an object with key 'new'(last stored) & 'old'(prev stored)", function(done) {
+        async.waterfall([
+          function(callback) {
+            help_detect_set('foo', { name: 'foo' }, callback);
+          },
+          function(callback) {
+            help_detect_set('foo', { name: 'bar' }, callback);
+          },
+        ], (error) => {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(this.changes).to.deep.equal({
+            new: { name: 'bar' },
+            old: { name: 'foo' },
+          });
+          done();
+        });
+      });
+
+    });
+
+    describe('given a stored key', function() {
+
+      beforeEach(function(done) {
+        storage.set('foo', { name: 'foobar' }, done);
+      });
+
+      beforeEach(function() {
+        storage.watch('foo', (error, changes) => {
+          this.changes = changes;
+        });
+      });
+
+      it("should return an object with key 'new'(last stored) & 'old'(prev stored)", function(done) {
+        help_detect_set('foo', { name: 'foo' }, (error) => {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(this.changes).to.deep.equal({
+            new: { name: 'foo' },
+            old: { name: 'foobar' },
+          });
+          done();
+        });
+      });
+
+    });
+
+    describe('given a stored key in a custom data path', function() {
+
+      beforeEach(function(done) {
+        this.dataPath = os.tmpdir();
+        storage.set('foo', { name: 'foobar' }, { dataPath: this.dataPath }, done);
+      });
+
+      beforeEach(function() {
+        storage.watch('foo', { dataPath: this.dataPath }, (error, changes) => {
+          this.changes = changes;
+        });
+      });
+
+      it("should return an object with key 'new'(last stored) & 'old'(prev stored)", function(done) {
+        help_detect_set('foo', { name: 'foo' }, { dataPath: this.dataPath }, (error) => {
+          m.chai.expect(error).to.not.exist;
+          m.chai.expect(this.changes).to.deep.equal({
+            new: { name: 'foo' },
+            old: { name: 'foobar' },
+          });
+          done();
+        });
+      });
+
+    });
+  });
 
   describe('.has()', function() {
 
