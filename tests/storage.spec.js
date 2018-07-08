@@ -44,8 +44,16 @@ describe('Electron JSON Storage', function() {
 
   // Ensure each test case is always ran in a clean state
   beforeEach(function(done) {
+    this.tmpdir = path.join(os.tmpdir(), 'electron-json-storage-tests');
     storage.setDataPath(utils.getDefaultDataPath());
-    storage.clear(done);
+    var self = this;
+    storage.clear(function(error) {
+      if (error) {
+        return done(error);
+      }
+
+      rimraf(self.tmpdir, done);
+    });
   });
 
   describe('stress testing', function() {
@@ -98,7 +106,7 @@ describe('Electron JSON Storage', function() {
   describe('.setDataPath()', function() {
 
     it('should be able to set a custom data path', function() {
-      const newDataPath = os.tmpdir();
+      const newDataPath = this.tmpdir;
       storage.setDataPath(newDataPath);
       const dataPath = storage.getDataPath();
       m.chai.expect(dataPath).to.equal(newDataPath);
@@ -126,7 +134,7 @@ describe('Electron JSON Storage', function() {
     });
 
     it('should be able to return new data paths', function() {
-      const newDataPath = os.tmpdir();
+      const newDataPath = this.tmpdir;
       storage.setDataPath(newDataPath);
       const dataPath = storage.getDataPath();
       m.chai.expect(dataPath).to.equal(newDataPath);
@@ -186,7 +194,7 @@ describe('Electron JSON Storage', function() {
     describe('given the same key stored in multiple data paths', function(done) {
 
       beforeEach(function(done) {
-        this.newDataPath = path.join(os.tmpdir(), 'electron-json-storage');
+        this.newDataPath = path.join(this.tmpdir, 'electron-json-storage');
         const self = this;
 
         async.waterfall([
@@ -232,9 +240,9 @@ describe('Electron JSON Storage', function() {
 
       it('should return nothing given the wrong data path', function(done) {
         if (os.platform() === 'win32') {
-          storage.setDataPath('C:\\electron-json-storage');
+          storage.setDataPath('C:\\tmp\\electron-json-storage');
         } else {
-          storage.setDataPath('/electron-json-storage');
+          storage.setDataPath('/tmp/electron-json-storage');
         }
 
         storage.get('foo', function(error, data) {
@@ -355,7 +363,7 @@ describe('Electron JSON Storage', function() {
     describe('given many stored keys in a custom data path', function() {
 
       beforeEach(function(done) {
-        this.dataPath = os.tmpdir();
+        this.dataPath = this.tmpdir;
         async.parallel([
           _.partial(storage.set, 'foo', { name: 'foo' }, { dataPath: this.dataPath }),
           _.partial(storage.set, 'bar', { name: 'bar' }, { dataPath: this.dataPath }),
@@ -506,7 +514,7 @@ describe('Electron JSON Storage', function() {
     describe('given many stored keys in different locations', function() {
 
       beforeEach(function(done) {
-        this.dataPath = path.join(os.tmpdir(), 'hello');
+        this.dataPath = path.join(this.tmpdir, 'hello');
 
         async.parallel([
           _.partial(storage.set, 'foo', { name: 'foo' }),
@@ -545,7 +553,7 @@ describe('Electron JSON Storage', function() {
     describe('given many stored keys in different data directories', function() {
 
       beforeEach(function(done) {
-        this.newDataPath = path.join(os.tmpdir(), 'electron-json-storage');
+        this.newDataPath = path.join(this.tmpdir, 'electron-json-storage');
         const self = this;
 
         async.parallel([
@@ -666,7 +674,7 @@ describe('Electron JSON Storage', function() {
     });
 
     it('should be able to store an object to a custom location', function(done) {
-      const newDataPath = os.tmpdir();
+      const newDataPath = this.tmpdir;
 
       async.waterfall([
         function(callback) {
@@ -842,7 +850,7 @@ describe('Electron JSON Storage', function() {
     describe('given a stored key in a custom location', function() {
 
       beforeEach(function(done) {
-        this.dataPath = os.tmpdir();
+        this.dataPath = this.tmpdir;
         storage.set('foo', { foo: 'bar' }, {
           dataPath: this.dataPath
         }, done);
@@ -937,7 +945,7 @@ describe('Electron JSON Storage', function() {
     describe('given keys in a custom location', function() {
 
       beforeEach(function(done) {
-        this.dataPath = path.join(os.tmpdir(), 'custom-data-path');
+        this.dataPath = path.join(this.tmpdir, 'custom-data-path');
         async.waterfall([
           _.partial(storage.set, 'one', 'foo', { dataPath: this.dataPath }),
           _.partial(storage.set, 'two', 'bar', { dataPath: this.dataPath }),
@@ -1097,7 +1105,7 @@ describe('Electron JSON Storage', function() {
     describe('given a stored key in a custom location', function() {
 
       beforeEach(function(done) {
-        this.dataPath = os.tmpdir();
+        this.dataPath = this.tmpdir;
         storage.set('foo', { foo: 'bar' }, { dataPath: this.dataPath }, done);
       });
 
@@ -1186,7 +1194,7 @@ describe('Electron JSON Storage', function() {
     describe('given a stored key in a custom location', function() {
 
       beforeEach(function(done) {
-        this.dataPath = os.tmpdir();
+        this.dataPath = this.tmpdir;
         storage.set('foo', { foo: 'bar' }, { dataPath: this.dataPath }, done);
       });
 
