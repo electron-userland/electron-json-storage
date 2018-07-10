@@ -40,7 +40,7 @@ const app = electron.app || electron.remote.app;
 
 describe('Electron JSON Storage', function() {
 
-  this.timeout(20000);
+  this.timeout(100000);
 
   // Ensure each test case is always ran in a clean state
   beforeEach(function(done) {
@@ -232,9 +232,9 @@ describe('Electron JSON Storage', function() {
 
       it('should return nothing given the wrong data path', function(done) {
         if (os.platform() === 'win32') {
-          storage.setDataPath('C:\\electron-json-storage');
+          storage.setDataPath('C:\\tmp\\lectron-json-storage');
         } else {
-          storage.setDataPath('/electron-json-storage');
+          storage.setDataPath('/tmp/electron-json-storage');
         }
 
         storage.get('foo', function(error, data) {
