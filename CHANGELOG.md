@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.1.1] - 2018-07-11
+
+### Changed
+
+- Ensure parallel writes from multiple processes don't corrupt data
+
 ## [4.1.0] - 2018-04-15
 
 ### Changed
@@ -152,6 +158,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[4.1.1]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/electron-userland/electron-json-storage/compare/v4.0.3...v4.1.0
 [4.0.3]: https://github.com/electron-userland/electron-json-storage/compare/v4.0.2...v4.0.3
 [4.0.2]: https://github.com/electron-userland/electron-json-storage/compare/v4.0.1...v4.0.2
