@@ -25,7 +25,6 @@
 'use strict';
 
 const electron = require('electron');
-const m = require('mochainon');
 const _ = require('lodash');
 const async = require('async');
 const fs = require('fs');
@@ -34,6 +33,7 @@ const os = require('os');
 const tmp = require('tmp');
 const rimraf = require('rimraf');
 const mkdirp = require('mkdirp');
+const chai = require('chai');
 const storage = require('../lib/storage');
 const utils = require('../lib/utils');
 const app = electron.app || electron.remote.app;
@@ -60,7 +60,7 @@ describe('Electron JSON Storage', function() {
           _.partial(storage.set, 'foo', { value: number }),
           _.partial(storage.get, 'foo'),
           function(data, next) {
-            m.chai.expect(data.value).to.equal(number);
+            chai.expect(data.value).to.equal(number);
             next();
           }
         ], callback);
@@ -74,7 +74,7 @@ describe('Electron JSON Storage', function() {
           _.partial(storage.set, 'foo', { value: [number, number] })
         ], function() {
           storage.get('foo', function(error, data) {
-            m.chai.expect(error).to.not.exist;
+            chai.expect(error).to.not.exist;
             callback();
           });
         });
@@ -86,11 +86,11 @@ describe('Electron JSON Storage', function() {
   describe('.getDefaultDataPath()', function() {
 
     it('should be a string', function() {
-      m.chai.expect(_.isString(storage.getDefaultDataPath())).to.be.true;
+      chai.expect(_.isString(storage.getDefaultDataPath())).to.be.true;
     });
 
     it('should be an absolute path', function() {
-      m.chai.expect(path.isAbsolute(storage.getDefaultDataPath())).to.be.true;
+      chai.expect(path.isAbsolute(storage.getDefaultDataPath())).to.be.true;
     });
 
   });
@@ -101,17 +101,17 @@ describe('Electron JSON Storage', function() {
       const newDataPath = os.tmpdir();
       storage.setDataPath(newDataPath);
       const dataPath = storage.getDataPath();
-      m.chai.expect(dataPath).to.equal(newDataPath);
+      chai.expect(dataPath).to.equal(newDataPath);
     });
 
     it('should set the default path if no argument', function() {
       storage.setDataPath();
       const dataPath = app.getPath('userData');
-      m.chai.expect(storage.getDataPath().indexOf(dataPath)).to.equal(0);
+      chai.expect(storage.getDataPath().indexOf(dataPath)).to.equal(0);
     });
 
     it('should throw given a relative path', function() {
-      m.chai.expect(function() {
+      chai.expect(function() {
         storage.setDataPath('foo');
       }).to.throw('The user data path should be an absolute directory');
     });
@@ -122,14 +122,14 @@ describe('Electron JSON Storage', function() {
 
     it('should initially return the default data path', function() {
       const dataPath = storage.getDataPath();
-      m.chai.expect(dataPath).to.equal(utils.getDefaultDataPath());
+      chai.expect(dataPath).to.equal(utils.getDefaultDataPath());
     });
 
     it('should be able to return new data paths', function() {
       const newDataPath = os.tmpdir();
       storage.setDataPath(newDataPath);
       const dataPath = storage.getDataPath();
-      m.chai.expect(dataPath).to.equal(newDataPath);
+      chai.expect(dataPath).to.equal(newDataPath);
     });
 
   });
@@ -138,27 +138,27 @@ describe('Electron JSON Storage', function() {
 
     it('should yield an error if no key', function(done) {
       storage.get(null, function(error, data) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Missing key');
-        m.chai.expect(data).to.not.exist;
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Missing key');
+        chai.expect(data).to.not.exist;
         done();
       });
     });
 
     it('should yield an error if key is not a string', function(done) {
       storage.get(123, function(error, data) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Invalid key');
-        m.chai.expect(data).to.not.exist;
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Invalid key');
+        chai.expect(data).to.not.exist;
         done();
       });
     });
 
     it('should yield an error if key is a blank string', function(done) {
       storage.get('    ', function(error, data) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Invalid key');
-        m.chai.expect(data).to.not.exist;
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Invalid key');
+        chai.expect(data).to.not.exist;
         done();
       });
     });
@@ -175,8 +175,8 @@ describe('Electron JSON Storage', function() {
 
       it('should return an empty object for any key', function(done) {
         storage.get('foobarbaz', function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({});
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({});
           done();
         });
       });
@@ -209,8 +209,8 @@ describe('Electron JSON Storage', function() {
 
       it('should initially return the key in the default location', function(done) {
         storage.get('foo', function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({
             location: 'default'
           });
 
@@ -221,8 +221,8 @@ describe('Electron JSON Storage', function() {
       it('should return the new value given the right data path', function(done) {
         storage.setDataPath(this.newDataPath);
         storage.get('foo', function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({
             location: 'new'
           });
 
@@ -243,8 +243,8 @@ describe('Electron JSON Storage', function() {
             storage.get('foo', callback);
           }
         ], function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({});
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({});
           done();
         });
       });
@@ -261,8 +261,8 @@ describe('Electron JSON Storage', function() {
 
       it('should return all stored keys', function(done) {
         storage.getAll(function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({
             foo: { name: 'foo' },
             'bar:colon': { name: 'bar' }
           });
@@ -280,24 +280,24 @@ describe('Electron JSON Storage', function() {
 
       it('should yield the data', function(done) {
         storage.get('foo', function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({ data: 'hello world' });
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({ data: 'hello world' });
           done();
         });
       });
 
       it('should yield the data if explicitly passing the extension', function(done) {
         storage.get('foo.json', function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({ data: 'hello world' });
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({ data: 'hello world' });
           done();
         });
       });
 
       it('should yield an empty object given an incorrect key', function(done) {
         storage.get('foobarbaz', function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({});
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({});
           done();
         });
       });
@@ -318,9 +318,9 @@ describe('Electron JSON Storage', function() {
 
       it('should yield an error', function(done) {
         storage.get('foo', function(error, data) {
-          m.chai.expect(error).to.be.an.instanceof(Error);
-          m.chai.expect(error.message).to.equal('Invalid data: Foo{bar}123');
-          m.chai.expect(data).to.not.exist;
+          chai.expect(error).to.be.an.instanceof(Error);
+          chai.expect(error.message).to.equal('Invalid data: Foo{bar}123');
+          chai.expect(data).to.not.exist;
           done();
         });
       });
@@ -344,8 +344,8 @@ describe('Electron JSON Storage', function() {
             storage.get('foo', callback);
           },
         ], function(error, result) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(result).to.deep.equal({});
+          chai.expect(error).to.not.exist;
+          chai.expect(result).to.deep.equal({});
           done();
         });
       });
@@ -369,8 +369,8 @@ describe('Electron JSON Storage', function() {
 
       it('should return nothing given the wrong data path', function(done) {
         storage.getMany([ 'foo', 'baz' ], function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({
             foo: {},
             baz: {}
           });
@@ -382,8 +382,8 @@ describe('Electron JSON Storage', function() {
         storage.getMany([ 'foo', 'baz' ], {
           dataPath: this.dataPath
         }, function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({
             foo: { name: 'foo' },
             baz: { name: 'baz' }
           });
@@ -405,16 +405,16 @@ describe('Electron JSON Storage', function() {
 
       it('should return an empty object if no passed keys', function(done) {
         storage.getMany([], function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({});
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({});
           done();
         });
       });
 
       it('should read the passed keys', function(done) {
         storage.getMany([ 'foo', 'baz' ], function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({
             foo: { name: 'foo' },
             baz: { name: 'baz' }
           });
@@ -424,8 +424,8 @@ describe('Electron JSON Storage', function() {
 
       it('should be able to read a single key', function(done) {
         storage.getMany([ 'foo' ], function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({
             foo: { name: 'foo' }
           });
           done();
@@ -434,8 +434,8 @@ describe('Electron JSON Storage', function() {
 
       it('should return empty objects for missing keys', function(done) {
         storage.getMany([ 'foo', 'hello' ], function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({
             foo: { name: 'foo' },
             hello: {}
           });
@@ -461,8 +461,8 @@ describe('Electron JSON Storage', function() {
 
       it('should return an empty object', function(done) {
         storage.getAll(function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({});
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({});
           done();
         });
       });
@@ -475,8 +475,8 @@ describe('Electron JSON Storage', function() {
 
       it('should return an empty object', function(done) {
         storage.getAll(function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({});
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({});
           done();
         });
       });
@@ -495,8 +495,8 @@ describe('Electron JSON Storage', function() {
 
       it('should return all stored keys', function(done) {
         storage.getAll(function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({
             foo: { name: 'foo' },
             bar: { name: 'bar' },
             baz: { name: 'baz' }
@@ -523,8 +523,8 @@ describe('Electron JSON Storage', function() {
 
       it('should return all stored keys in the default location', function(done) {
         storage.getAll(function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({
             foo: { name: 'foo' },
             baz: { name: 'baz' }
           });
@@ -536,8 +536,8 @@ describe('Electron JSON Storage', function() {
         storage.getAll({
           dataPath: this.dataPath
         }, function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({
             bar: { name: 'bar' }
           });
           done();
@@ -579,7 +579,7 @@ describe('Electron JSON Storage', function() {
         async.waterfall([
           storage.getAll,
           function(keys, callback) {
-            m.chai.expect(keys).to.deep.equal({
+            chai.expect(keys).to.deep.equal({
               foo: { name: 'foo' },
               bar: { name: 'bar' }
             });
@@ -592,7 +592,7 @@ describe('Electron JSON Storage', function() {
           },
           storage.getAll,
           function(keys, callback) {
-            m.chai.expect(keys).to.deep.equal({
+            chai.expect(keys).to.deep.equal({
               baz: { name: 'baz' }
             });
 
@@ -609,32 +609,32 @@ describe('Electron JSON Storage', function() {
 
     it('should yield an error if no key', function(done) {
       storage.set(null, { foo: 'bar' }, function(error) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Missing key');
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Missing key');
         done();
       });
     });
 
     it('should yield an error if key is not a string', function(done) {
       storage.set(123, { foo: 'bar' }, function(error) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Invalid key');
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Invalid key');
         done();
       });
     });
 
     it('should yield an error if key is a blank string', function(done) {
       storage.set('    ', { foo: 'bar' }, function(error) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Invalid key');
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Invalid key');
         done();
       });
     });
 
     it('should yield an error if data is not a valid JSON object', function(done) {
       storage.set('foo', _.noop, function(error) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Invalid JSON data');
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Invalid JSON data');
         done();
       });
     });
@@ -648,8 +648,8 @@ describe('Electron JSON Storage', function() {
           storage.get('test:value', callback);
         }
       ], function(error, data) {
-        m.chai.expect(error).to.not.exist;
-        m.chai.expect(data).to.deep.equal({ foo: 'bar' });
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'bar' });
         done();
       });
     });
@@ -663,8 +663,8 @@ describe('Electron JSON Storage', function() {
           storage.get('foo', callback);
         }
       ], function(error, data) {
-        m.chai.expect(error).to.not.exist;
-        m.chai.expect(data).to.deep.equal({ foo: 'baz' });
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'baz' });
         done();
       });
     });
@@ -691,9 +691,9 @@ describe('Electron JSON Storage', function() {
           }, callback);
         }
       ], function(error, results) {
-        m.chai.expect(error).to.not.exist;
-        m.chai.expect(results.newDataPath).to.deep.equal({ foo: 'baz' });
-        m.chai.expect(results.oldDataPath).to.deep.equal({});
+        chai.expect(error).to.not.exist;
+        chai.expect(results.newDataPath).to.deep.equal({ foo: 'baz' });
+        chai.expect(results.oldDataPath).to.deep.equal({});
         done();
       });
     });
@@ -707,8 +707,8 @@ describe('Electron JSON Storage', function() {
           storage.get('foo', callback);
         }
       ], function(error, data) {
-        m.chai.expect(error).to.not.exist;
-        m.chai.expect(data).to.deep.equal({ foo: 'baz' });
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'baz' });
         done();
       });
     });
@@ -723,8 +723,8 @@ describe('Electron JSON Storage', function() {
           storage.get(key, callback);
         }
       ], function(error, data) {
-        m.chai.expect(error).to.not.exist;
-        m.chai.expect(data).to.deep.equal({ foo: 'baz' });
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'baz' });
         done();
       });
     });
@@ -739,8 +739,8 @@ describe('Electron JSON Storage', function() {
             storage.get(key, callback);
           }
         ], function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({ foo: 'baz' });
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({ foo: 'baz' });
           done();
         });
     });
@@ -757,26 +757,26 @@ describe('Electron JSON Storage', function() {
             storage.get('foo', callback);
           },
           function(data, callback) {
-            m.chai.expect(data).to.deep.equal({ foo: 'bar' });
+            chai.expect(data).to.deep.equal({ foo: 'bar' });
             storage.set('foo', { foo: 'baz' }, callback);
           },
           function(callback) {
             storage.get('foo', callback);
           }
         ], function(error, data) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(data).to.deep.equal({ foo: 'baz' });
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({ foo: 'baz' });
           done();
         });
       });
 
       it('should not override the stored key if the passed data is invalid', function(done) {
         storage.set('foo', _.noop, function(error) {
-          m.chai.expect(error).to.be.an.instanceof(Error);
+          chai.expect(error).to.be.an.instanceof(Error);
 
           storage.get('foo', function(error, data) {
-            m.chai.expect(error).to.not.exist;
-            m.chai.expect(data).to.deep.equal({ foo: 'bar' });
+            chai.expect(error).to.not.exist;
+            chai.expect(data).to.deep.equal({ foo: 'bar' });
             done();
           });
         });
@@ -804,8 +804,8 @@ describe('Electron JSON Storage', function() {
             storage.get('foo', callback);
           },
         ], function(error, result) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(result).to.deep.equal({ foo: 'bar' });
+          chai.expect(error).to.not.exist;
+          chai.expect(result).to.deep.equal({ foo: 'bar' });
           done();
         });
       });
@@ -818,27 +818,27 @@ describe('Electron JSON Storage', function() {
 
     it('should yield an error if no key', function(done) {
       storage.has(null, function(error, hasKey) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Missing key');
-        m.chai.expect(hasKey).to.not.exist;
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Missing key');
+        chai.expect(hasKey).to.not.exist;
         done();
       });
     });
 
     it('should yield an error if key is not a string', function(done) {
       storage.has(123, function(error, hasKey) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Invalid key');
-        m.chai.expect(hasKey).to.not.exist;
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Invalid key');
+        chai.expect(hasKey).to.not.exist;
         done();
       });
     });
 
     it('should yield an error if key is a blank string', function(done) {
       storage.has('    ', function(error, hasKey) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Invalid key');
-        m.chai.expect(hasKey).to.not.exist;
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Invalid key');
+        chai.expect(hasKey).to.not.exist;
         done();
       });
     });
@@ -854,8 +854,8 @@ describe('Electron JSON Storage', function() {
 
       it('should yield false given the default data path', function(done) {
         storage.has('foo', function(error, hasKey) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.equal(false);
+          chai.expect(error).to.not.exist;
+          chai.expect(hasKey).to.equal(false);
           done();
         });
       });
@@ -864,8 +864,8 @@ describe('Electron JSON Storage', function() {
         storage.has('foo', {
           dataPath: this.dataPath
         }, function(error, hasKey) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.equal(true);
+          chai.expect(error).to.not.exist;
+          chai.expect(hasKey).to.equal(true);
           done();
         });
       });
@@ -880,24 +880,24 @@ describe('Electron JSON Storage', function() {
 
       it('should yield true if the key exists', function(done) {
         storage.has('foo', function(error, hasKey) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.equal(true);
+          chai.expect(error).to.not.exist;
+          chai.expect(hasKey).to.equal(true);
           done();
         });
       });
 
       it('should yield true if the key has a json extension', function(done) {
         storage.has('foo.json', function(error, hasKey) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.equal(true);
+          chai.expect(error).to.not.exist;
+          chai.expect(hasKey).to.equal(true);
           done();
         });
       });
 
       it('should yield false if the key does not exist', function(done) {
         storage.has('hello', function(error, hasKey) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.equal(false);
+          chai.expect(error).to.not.exist;
+          chai.expect(hasKey).to.equal(false);
           done();
         });
       });
@@ -924,8 +924,8 @@ describe('Electron JSON Storage', function() {
 
       it('should correctly decode the file names', function(done) {
         storage.keys(function(error, keys) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(keys).to.deep.equal([
+          chai.expect(error).to.not.exist;
+          chai.expect(keys).to.deep.equal([
             'one',
             'three:colon',
             'two'
@@ -951,8 +951,8 @@ describe('Electron JSON Storage', function() {
 
       it('should return nothing given the default data path', function(done) {
         storage.keys(function(error, keys) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(keys.length).to.equal(0);
+          chai.expect(error).to.not.exist;
+          chai.expect(keys.length).to.equal(0);
           done();
         });
       });
@@ -961,11 +961,11 @@ describe('Electron JSON Storage', function() {
         storage.keys({
           dataPath: this.dataPath
         }, function(error, keys) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(keys.length).to.equal(3);
-          m.chai.expect(_.includes(keys, 'one')).to.be.true;
-          m.chai.expect(_.includes(keys, 'two')).to.be.true;
-          m.chai.expect(_.includes(keys, 'three')).to.be.true;
+          chai.expect(error).to.not.exist;
+          chai.expect(keys.length).to.equal(3);
+          chai.expect(_.includes(keys, 'one')).to.be.true;
+          chai.expect(_.includes(keys, 'two')).to.be.true;
+          chai.expect(_.includes(keys, 'three')).to.be.true;
           done();
         });
       });
@@ -989,11 +989,11 @@ describe('Electron JSON Storage', function() {
 
       it('should only include the json files', function(done) {
         storage.keys(function(error, keys) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(keys.length).to.equal(3);
-          m.chai.expect(_.includes(keys, 'one')).to.be.true;
-          m.chai.expect(_.includes(keys, 'two')).to.be.true;
-          m.chai.expect(_.includes(keys, 'three')).to.be.true;
+          chai.expect(error).to.not.exist;
+          chai.expect(keys.length).to.equal(3);
+          chai.expect(_.includes(keys, 'one')).to.be.true;
+          chai.expect(_.includes(keys, 'two')).to.be.true;
+          chai.expect(_.includes(keys, 'three')).to.be.true;
           done();
         });
       });
@@ -1002,8 +1002,8 @@ describe('Electron JSON Storage', function() {
 
     it('should yield an empty array if no keys', function(done) {
       storage.keys(function(error, keys) {
-        m.chai.expect(error).to.not.exist;
-        m.chai.expect(keys).to.deep.equal([]);
+        chai.expect(error).to.not.exist;
+        chai.expect(keys).to.deep.equal([]);
         done();
       });
     });
@@ -1015,8 +1015,8 @@ describe('Electron JSON Storage', function() {
         },
         storage.keys,
       ], function(error, keys) {
-        m.chai.expect(error).to.not.exist;
-        m.chai.expect(keys).to.deep.equal([ 'foo' ]);
+        chai.expect(error).to.not.exist;
+        chai.expect(keys).to.deep.equal([ 'foo' ]);
         done();
       });
     });
@@ -1028,8 +1028,8 @@ describe('Electron JSON Storage', function() {
         },
         storage.keys,
       ], function(error, keys) {
-        m.chai.expect(error).to.not.exist;
-        m.chai.expect(keys).to.deep.equal([ 'foo' ]);
+        chai.expect(error).to.not.exist;
+        chai.expect(keys).to.deep.equal([ 'foo' ]);
         done();
       });
     });
@@ -1041,8 +1041,8 @@ describe('Electron JSON Storage', function() {
         },
         storage.keys,
       ], function(error, keys) {
-        m.chai.expect(error).to.not.exist;
-        m.chai.expect(keys).to.deep.equal([ 'foo.data' ]);
+        chai.expect(error).to.not.exist;
+        chai.expect(keys).to.deep.equal([ 'foo.data' ]);
         done();
       });
     });
@@ -1060,8 +1060,8 @@ describe('Electron JSON Storage', function() {
           storage.keys(callback);
         }
       ], function(error, keys) {
-        m.chai.expect(error).to.not.exist;
-        m.chai.expect(keys).to.deep.equal([
+        chai.expect(error).to.not.exist;
+        chai.expect(keys).to.deep.equal([
           'one',
           'three',
           'two'
@@ -1076,24 +1076,24 @@ describe('Electron JSON Storage', function() {
 
     it('should yield an error if no key', function(done) {
       storage.remove(null, function(error) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Missing key');
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Missing key');
         done();
       });
     });
 
     it('should yield an error if key is not a string', function(done) {
       storage.remove(123, function(error) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Invalid key');
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Invalid key');
         done();
       });
     });
 
     it('should yield an error if key is a blank string', function(done) {
       storage.remove('     ', function(error) {
-        m.chai.expect(error).to.be.an.instanceof(Error);
-        m.chai.expect(error.message).to.equal('Invalid key');
+        chai.expect(error).to.be.an.instanceof(Error);
+        chai.expect(error.message).to.equal('Invalid key');
         done();
       });
     });
@@ -1115,15 +1115,15 @@ describe('Electron JSON Storage', function() {
             storage.has('foo', options, callback);
           },
           function(hasKey, callback) {
-            m.chai.expect(hasKey).to.be.true;
+            chai.expect(hasKey).to.be.true;
             storage.remove('foo', options, callback);
           },
           function(callback) {
             storage.has('foo', options, callback);
           }
         ], function(error, hasKey) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.be.false;
+          chai.expect(error).to.not.exist;
+          chai.expect(hasKey).to.be.false;
           done();
         });
       });
@@ -1142,15 +1142,15 @@ describe('Electron JSON Storage', function() {
             storage.has('foo', callback);
           },
           function(hasKey, callback) {
-            m.chai.expect(hasKey).to.be.true;
+            chai.expect(hasKey).to.be.true;
             storage.remove('foo', callback);
           },
           function(callback) {
             storage.has('foo', callback);
           }
         ], function(error, hasKey) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.be.false;
+          chai.expect(error).to.not.exist;
+          chai.expect(hasKey).to.be.false;
           done();
         });
       });
@@ -1161,15 +1161,15 @@ describe('Electron JSON Storage', function() {
             storage.has('bar', callback);
           },
           function(hasKey, callback) {
-            m.chai.expect(hasKey).to.be.false;
+            chai.expect(hasKey).to.be.false;
             storage.remove('bar', callback);
           },
           function(callback) {
             storage.has('bar', callback);
           }
         ], function(error, hasKey) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.be.false;
+          chai.expect(error).to.not.exist;
+          chai.expect(hasKey).to.be.false;
           done();
         });
       });
@@ -1182,7 +1182,7 @@ describe('Electron JSON Storage', function() {
 
     it('should not yield an error if no keys', function(done) {
       storage.clear(function(error) {
-        m.chai.expect(error).to.not.exist;
+        chai.expect(error).to.not.exist;
         done();
       });
     });
@@ -1204,15 +1204,15 @@ describe('Electron JSON Storage', function() {
             storage.has('foo', options, callback);
           },
           function(hasKey, callback) {
-            m.chai.expect(hasKey).to.be.true;
+            chai.expect(hasKey).to.be.true;
             storage.clear(options, callback);
           },
           function(callback) {
             storage.has('foo', options, callback);
           }
         ], function(error, hasKey) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.be.false;
+          chai.expect(error).to.not.exist;
+          chai.expect(hasKey).to.be.false;
           done();
         });
       });
@@ -1231,15 +1231,15 @@ describe('Electron JSON Storage', function() {
             storage.has('foo', callback);
           },
           function(hasKey, callback) {
-            m.chai.expect(hasKey).to.be.true;
+            chai.expect(hasKey).to.be.true;
             storage.clear(callback);
           },
           function(callback) {
             storage.has('foo', callback);
           }
         ], function(error, hasKey) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(hasKey).to.be.false;
+          chai.expect(error).to.not.exist;
+          chai.expect(hasKey).to.be.false;
           done();
         });
       });
@@ -1264,13 +1264,13 @@ describe('Electron JSON Storage', function() {
         async.waterfall([
           _.partial(isDirectory, userDataPath),
           function(directory, callback) {
-            m.chai.expect(directory).to.be.true;
+            chai.expect(directory).to.be.true;
             storage.clear(callback);
           },
           _.partial(isDirectory, userDataPath)
         ], function(error, directory) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(directory).to.be.true;
+          chai.expect(error).to.not.exist;
+          chai.expect(directory).to.be.true;
           done();
         });
       });
@@ -1295,8 +1295,8 @@ describe('Electron JSON Storage', function() {
             ], callback);
           }
         ], function(error, results) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(results).to.deep.equal([ 'foo', 'bar.json' ]);
+          chai.expect(error).to.not.exist;
+          chai.expect(results).to.deep.equal([ 'foo', 'bar.json' ]);
           done();
         });
       });
@@ -1323,9 +1323,9 @@ describe('Electron JSON Storage', function() {
             }, callback);
           },
           function(results, callback) {
-            m.chai.expect(results.foo).to.be.true;
-            m.chai.expect(results.bar).to.be.true;
-            m.chai.expect(results.baz).to.be.true;
+            chai.expect(results.foo).to.be.true;
+            chai.expect(results.bar).to.be.true;
+            chai.expect(results.baz).to.be.true;
 
             storage.clear(callback);
           },
@@ -1337,10 +1337,10 @@ describe('Electron JSON Storage', function() {
             }, callback);
           },
         ], function(error, results) {
-          m.chai.expect(error).to.not.exist;
-          m.chai.expect(results.foo).to.be.false;
-          m.chai.expect(results.bar).to.be.false;
-          m.chai.expect(results.baz).to.be.false;
+          chai.expect(error).to.not.exist;
+          chai.expect(results.foo).to.be.false;
+          chai.expect(results.bar).to.be.false;
+          chai.expect(results.baz).to.be.false;
           done();
         });
       });
