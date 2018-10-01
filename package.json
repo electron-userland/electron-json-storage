@@ -27,10 +27,10 @@
   "author": "Juan Cruz Viotti <jv@jviotti.com>",
   "license": "MIT",
   "devDependencies": {
+    "chai": "^4.2.0",
     "electron-mocha": "^6.0.4",
     "jsdoc-to-markdown": "^2.0.1",
     "jshint": "^2.9.1",
-    "mochainon": "^1.0.0",
     "tmp": "0.0.31"
   },
   "dependencies": {
