@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.1.6] - 2019-01-26
+
+- Implement atomic writes
+
 ## [4.1.5] - 2018-12-02
 
 - Retry on `EPERM` when locking and reading
@@ -180,6 +184,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[4.1.6]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.5...v4.1.6
 [4.1.5]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.4...v4.1.5
 [4.1.4]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.3...v4.1.4
 [4.1.3]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.2...v4.1.3
