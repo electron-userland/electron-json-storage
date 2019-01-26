@@ -39,6 +39,7 @@
     "lockfile": "^1.0.4",
     "lodash": "^4.0.1",
     "mkdirp": "^0.5.1",
-    "rimraf": "^2.5.1"
+    "rimraf": "^2.5.1",
+    "write-file-atomic": "^2.4.2"
   }
 }
