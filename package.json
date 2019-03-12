@@ -30,7 +30,7 @@
     "chai": "^4.2.0",
     "electron": "^7.2.4",
     "electron-mocha": "^9.0.1",
-    "jsdoc-to-markdown": "^2.0.1",
+    "jsdoc-to-markdown": "^6.0.1",
     "jshint": "^2.9.1",
     "tmp": "0.0.31"
   },

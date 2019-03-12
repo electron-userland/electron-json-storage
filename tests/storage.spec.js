@@ -67,6 +67,21 @@ describe('Electron JSON Storage', function() {
       }, done);
     });
 
+    it('should survive serial stress testing with validate=true', function(done) {
+      async.eachSeries(_.times(100, () => {
+        return Math.floor(Math.random() * 100000);
+      }), function(number, callback) {
+        async.waterfall([
+          _.partial(storage.set, 'foo', { value: number }, { validate: true }),
+          _.partial(storage.get, 'foo'),
+          function(data, next) {
+            chai.expect(data.value).to.equal(number);
+            next();
+          }
+        ], callback);
+      }, done);
+    });
+
     it('should survive parallel stress testing', function(done) {
       async.eachSeries(cases, function(number, callback) {
         async.parallel([
@@ -658,6 +673,21 @@ describe('Electron JSON Storage', function() {
       async.waterfall([
         function(callback) {
           storage.set('foo', { foo: 'baz' }, callback);
+        },
+        function(callback) {
+          storage.get('foo', callback);
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'baz' });
+        done();
+      });
+    });
+
+    it('should be able to store a valid JSON object using validate=true', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo', { foo: 'baz' }, { validate: true }, callback);
         },
         function(callback) {
           storage.get('foo', callback);
