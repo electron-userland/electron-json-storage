@@ -15,6 +15,10 @@ environment:
   matrix:
     - nodejs_version: 4
 
+branches:
+  only:
+    - master
+
 install:
   - ps: Install-Product node $env:nodejs_version x64
   - npm -g install npm@2
