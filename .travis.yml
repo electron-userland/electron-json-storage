@@ -1,8 +1,11 @@
 language: node_js
+dist: xenial
 node_js:
-  - "4.0"
-before_script:
-  - export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start
+  - 10
+services:
+  - xvfb
+before_install:
+  - sudo apt-get install -y libgconf-2-4
 script:
   - npm test
   - ./stress/start.sh
