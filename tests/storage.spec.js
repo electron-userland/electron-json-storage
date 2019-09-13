@@ -972,14 +972,16 @@ describe('Electron JSON Storage', function() {
 
     });
 
-    describe('given a .DS_Store file in the settings directory', function() {
+    describe('given invalid files in the settings directory', function() {
 
       beforeEach(function(done) {
         async.waterfall([
           _.partial(storage.set, 'one', 'foo'),
           _.partial(storage.set, 'two', 'bar'),
           _.partial(storage.set, 'three', 'baz'),
-          _.partial(fs.writeFile, path.join(storage.getDataPath(), '.DS_Store'), 'foo')
+          _.partial(fs.writeFile, path.join(storage.getDataPath(), '.DS_Store'), 'foo'),
+          _.partial(fs.writeFile, path.join(storage.getDataPath(), 'one.json.lock.STALE'), 'foo'),
+          _.partial(fs.writeFile, path.join(storage.getDataPath(), 'one.json.lock'), 'foo')
         ], done);
       });
 
