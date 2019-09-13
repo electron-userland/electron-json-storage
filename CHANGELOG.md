@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.1.8] - 2019-09-13
+
+- Don't list non-JSON files in `.keys()`
+
 ## [4.1.7] - 2019-08-12
 
 - Don't store data as UTF-8
@@ -188,6 +192,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[4.1.8]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.7...v4.1.8
 [4.1.7]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.6...v4.1.7
 [4.1.6]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.5...v4.1.6
 [4.1.5]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.4...v4.1.5
