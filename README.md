@@ -47,10 +47,10 @@ Documentation
 <a name="module_storage.getDefaultDataPath"></a>
 
 ### storage.getDefaultDataPath() ⇒ <code>String</code>
-**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Get the default data path  
 **Returns**: <code>String</code> - default data path  
-**Access:** public  
+**Access**: public  
 **Example**  
 ```js
 const defaultDataPath = storage.getDefaultDataPath()
@@ -60,13 +60,13 @@ const defaultDataPath = storage.getDefaultDataPath()
 ### storage.setDataPath(directory)
 The default value will be used if the directory is undefined.
 
-**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Set current data path  
-**Access:** public  
+**Access**: public  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| directory | <code>String</code> &#124; <code>Undefined</code> | directory |
+| directory | <code>String</code> \| <code>Undefined</code> | directory |
 
 **Example**  
 ```js
@@ -81,10 +81,10 @@ storage.setDataPath(os.tmpdir());
 Returns the current data path. It defaults to a directory called
 "storage" inside Electron's `userData` path.
 
-**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Get current user data path  
 **Returns**: <code>String</code> - the user data path  
-**Access:** public  
+**Access**: public  
 **Example**  
 ```js
 const storage = require('electron-json-storage');
@@ -103,9 +103,9 @@ Passing an extension other than `.json` will result in a file created
 with both extensions. For example, the key `foo.data` will result in a file
 called `foo.data.json`.
 
-**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Read user data  
-**Access:** public  
+**Access**: public  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -130,9 +130,9 @@ storage.get('foobar', function(error, data) {
 This function returns an object with the data of all the passed keys.
 If one of the keys doesn't exist, an empty object is returned for it.
 
-**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Read many user data keys  
-**Access:** public  
+**Access**: public  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -157,9 +157,9 @@ storage.getMany([ 'foobar', 'barbaz' ], function(error, data) {
 ### storage.getAll([options], callback)
 This function returns an empty object if there is no data to be read.
 
-**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Read all user data  
-**Access:** public  
+**Access**: public  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -180,9 +180,9 @@ storage.getAll(function(error, data) {
 <a name="module_storage.set"></a>
 
 ### storage.set(key, json, [options], callback)
-**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Write user data  
-**Access:** public  
+**Access**: public  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -190,6 +190,7 @@ storage.getAll(function(error, data) {
 | json | <code>Object</code> | json object |
 | [options] | <code>Object</code> | options |
 | [options.dataPath] | <code>String</code> | data path |
+| [options.validate] | <code>String</code> | validate writes by reading the data back |
 | callback | <code>function</code> | callback (error) |
 
 **Example**  
@@ -203,9 +204,9 @@ storage.set('foobar', { foo: 'bar' }, function(error) {
 <a name="module_storage.has"></a>
 
 ### storage.has(key, [options], callback)
-**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Check if a key exists  
-**Access:** public  
+**Access**: public  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -229,9 +230,9 @@ storage.has('foobar', function(error, hasKey) {
 <a name="module_storage.keys"></a>
 
 ### storage.keys([options], callback)
-**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Get the list of saved keys  
-**Access:** public  
+**Access**: public  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -257,9 +258,9 @@ storage.keys(function(error, keys) {
 Notice this function does nothing, nor throws any error
 if the key doesn't exist.
 
-**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Remove a key  
-**Access:** public  
+**Access**: public  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -279,9 +280,9 @@ storage.remove('foobar', function(error) {
 <a name="module_storage.clear"></a>
 
 ### storage.clear([options], callback)
-**Kind**: static method of <code>[storage](#module_storage)</code>  
+**Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Clear all stored data in the current user data path  
-**Access:** public  
+**Access**: public  
 
 | Param | Type | Description |
 | --- | --- | --- |
