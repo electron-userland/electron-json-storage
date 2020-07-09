@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.2.0] - 2020-07-09
+
+- Support a `validate` boolean option in `.set()` to validate writes by reading
+  the key back after a short period of time and re-trying the write if the
+  contents do not match
+
 ## [4.1.8] - 2019-09-13
 
 - Don't list non-JSON files in `.keys()`
@@ -192,6 +198,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[4.2.0]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.8...v4.2.0
 [4.1.8]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.7...v4.1.8
 [4.1.7]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.6...v4.1.7
 [4.1.6]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.5...v4.1.6
