@@ -27,6 +27,37 @@ $ npm install --save electron-json-storage
 
 You can require this module from either the **main** or **renderer** process (with and without `remote`).
 
+Running on Electron >10 renderer processes
+------------------------------------------
+
+When loaded in renderer processes, this module will make use of
+`electron.remote` in order to fetch the `userData` path.
+
+Electron 10 now [defaults `enableRemoteModule` to
+false](https://www.electronjs.org/docs/breaking-changes#default-changed-enableremotemodule-defaults-to-false),
+which means that `electron-json-storage` will not work on Electron 10 renderer
+processes unless you manually set `enableRemoteModule` to `true`:
+
+```js
+const win = new BrowserWindow({
+  webPreferences: {
+    enableRemoteModule: true
+  }
+})
+```
+
+Alternatively, you can avoid using the `remote` module by:
+
+- Passing the `electron.app.getPath('userData')` value from the **main**
+  process to your **renderer** processes through IPC or a medium of your choice
+
+- Calling `storage.setDataPath()`, on the **renderer** process, with the user
+  data path obtained on the previous step before calling any other
+  `electron-json-storage` function.
+
+If you do this, the user data path will be cached by the renderer process,
+which will not need to go through the `remote` module to obtain it.
+
 Documentation
 -------------
 
