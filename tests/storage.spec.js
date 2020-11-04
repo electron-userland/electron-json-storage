@@ -684,6 +684,72 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should minify JSON documents by default', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo', { foo: 'baz' }, callback);
+        },
+        function(callback) {
+          fs.readFile(utils.getFileName('foo'), {
+            encoding: 'utf8'
+          }, callback);
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal("{\"foo\":\"baz\"}");
+        done();
+      });
+    });
+
+    it('should minify JSON documents when setting prettyPrinting=false', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo', { foo: 'baz' }, { prettyPrinting: false }, callback);
+        },
+        function(callback) {
+          fs.readFile(utils.getFileName('foo'), {
+            encoding: 'utf8'
+          }, callback);
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal("{\"foo\":\"baz\"}");
+        done();
+      });
+    });
+
+    it('should not minify JSON documents when setting prettyPrinting=true', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo', { foo: 'baz' }, { prettyPrinting: true }, callback);
+        },
+        function(callback) {
+          fs.readFile(utils.getFileName('foo'), {
+            encoding: 'utf8'
+          }, callback);
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal("{\n  \"foo\": \"baz\"\n}");
+        done();
+      });
+    });
+
+    it('should be able to store a valid JSON pretty-printed object', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.set('foo', { foo: 'baz' }, { prettyPrinting: true }, callback);
+        },
+        function(callback) {
+          storage.get('foo', callback);
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'baz' });
+        done();
+      });
+    });
+
     it('should be able to store a valid JSON object using validate=true', function(done) {
       async.waterfall([
         function(callback) {
