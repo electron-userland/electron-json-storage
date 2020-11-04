@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.3.0] - 2020-11-04
+
+- Add a `prettyPrinting` option to `.set()`
+
 ## [4.2.0] - 2020-07-09
 
 - Support a `validate` boolean option in `.set()` to validate writes by reading
@@ -198,6 +202,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[4.3.0]: https://github.com/electron-userland/electron-json-storage/compare/v4.2.0...v4.3.0
 [4.2.0]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.8...v4.2.0
 [4.1.8]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.7...v4.1.8
 [4.1.7]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.6...v4.1.7
