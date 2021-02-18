@@ -30,40 +30,22 @@ You can require this module from either the **main** or **renderer** process (wi
 Running on Electron >10 renderer processes
 ------------------------------------------
 
-When loaded in renderer processes, this module will make use of
+When loaded in renderer processes, this module will try to make use of
 `electron.remote` in order to fetch the `userData` path.
 
 Electron 10 now [defaults `enableRemoteModule` to
 false](https://www.electronjs.org/docs/breaking-changes#default-changed-enableremotemodule-defaults-to-false),
-which means that `electron-json-storage` will not work on Electron 10 renderer
-processes unless you manually set `enableRemoteModule` to `true`:
+which means that `electron-json-storage` will be able to calculate a data path by default.
 
-```js
-const win = new BrowserWindow({
-  webPreferences: {
-    enableRemoteModule: true
-  }
-})
-```
-
-Alternatively, you can avoid using the `remote` module by:
-
-- Passing the `electron.app.getPath('userData')` value from the **main**
-  process to your **renderer** processes through IPC or a medium of your choice
-
-- Calling `storage.setDataPath()`, on the **renderer** process, with the user
-  data path obtained on the previous step before calling any other
-  `electron-json-storage` function.
-
-If you do this, the user data path will be cached by the renderer process,
-which will not need to go through the `remote` module to obtain it.
+The solution is to manually call `storage.setDataPath()` before reading or
+writing any values or setting `enableRemoteModule` to `true`.
 
 Documentation
 -------------
 
 
 * [storage](#module_storage)
-    * [.getDefaultDataPath()](#module_storage.getDefaultDataPath) ⇒ <code>String</code>
+    * [.getDefaultDataPath()](#module_storage.getDefaultDataPath) ⇒ <code>String</code> \| <code>Null</code>
     * [.setDataPath(directory)](#module_storage.setDataPath)
     * [.getDataPath()](#module_storage.getDataPath) ⇒ <code>String</code>
     * [.get(key, [options], callback)](#module_storage.get)
@@ -77,10 +59,15 @@ Documentation
 
 <a name="module_storage.getDefaultDataPath"></a>
 
-### storage.getDefaultDataPath() ⇒ <code>String</code>
+### storage.getDefaultDataPath() ⇒ <code>String</code> \| <code>Null</code>
+This function will return `null` when running in the
+renderer process without support for the `remote` IPC
+mechanism. You have to explicitly set a data path using
+`.setDataPath()` in these cases.
+
 **Kind**: static method of [<code>storage</code>](#module_storage)  
 **Summary**: Get the default data path  
-**Returns**: <code>String</code> - default data path  
+**Returns**: <code>String</code> \| <code>Null</code> - default data path  
 **Access**: public  
 **Example**  
 ```js
@@ -222,6 +209,7 @@ storage.getAll(function(error, data) {
 | [options] | <code>Object</code> | options |
 | [options.dataPath] | <code>String</code> | data path |
 | [options.validate] | <code>String</code> | validate writes by reading the data back |
+| [options.prettyPrinting] | <code>boolean</code> | adds line breaks and spacing to the written data |
 | callback | <code>function</code> | callback (error) |
 
 **Example**  
