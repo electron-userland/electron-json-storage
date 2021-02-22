@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.4.0] - 2021-02-22
+
+- Gracefully require the user to call `.setDataPath()` if the `remote` module
+  is not available when running on a renderer process
+
 ## [4.3.0] - 2020-11-04
 
 - Add a `prettyPrinting` option to `.set()`
@@ -202,6 +207,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[4.4.0]: https://github.com/electron-userland/electron-json-storage/compare/v4.3.0...v4.4.0
 [4.3.0]: https://github.com/electron-userland/electron-json-storage/compare/v4.2.0...v4.3.0
 [4.2.0]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.8...v4.2.0
 [4.1.8]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.7...v4.1.8
