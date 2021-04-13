@@ -160,6 +160,13 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should yield an error if no key (sync)', function(done) {
+      chai.expect(() => {
+        storage.getSync(null);
+      }).to.throw('Missing key');
+      done();
+    });
+
     it('should yield an error if key is not a string', function(done) {
       storage.get(123, function(error, data) {
         chai.expect(error).to.be.an.instanceof(Error);
@@ -169,6 +176,13 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should yield an error if key is not a string (sync)', function(done) {
+      chai.expect(() => {
+        storage.getSync(123);
+      }).to.throw('Invalid key');
+      done();
+    });
+
     it('should yield an error if key is a blank string', function(done) {
       storage.get('    ', function(error, data) {
         chai.expect(error).to.be.an.instanceof(Error);
@@ -176,6 +190,13 @@ describe('Electron JSON Storage', function() {
         chai.expect(data).to.not.exist;
         done();
       });
+    });
+
+    it('should yield an error if key is a blank string (sync)', function(done) {
+      chai.expect(() => {
+        storage.getSync('     ');
+      }).to.throw('Invalid key');
+      done();
     });
 
     describe('given the user data path does not exist', function() {
@@ -194,6 +215,12 @@ describe('Electron JSON Storage', function() {
           chai.expect(data).to.deep.equal({});
           done();
         });
+      });
+
+      it('should return an empty object for any key (sync)', function(done) {
+        var data = storage.getSync('foobarbaz');
+        chai.expect(data).to.deep.equal({});
+        done();
       });
 
     });
@@ -233,6 +260,15 @@ describe('Electron JSON Storage', function() {
         });
       });
 
+      it('should initially return the key in the default location (sync)', function(done) {
+        var data = storage.getSync('foo');
+        chai.expect(data).to.deep.equal({
+          location: 'default'
+        });
+
+        done();
+      });
+
       it('should return the new value given the right data path', function(done) {
         storage.setDataPath(this.newDataPath);
         storage.get('foo', function(error, data) {
@@ -243,6 +279,16 @@ describe('Electron JSON Storage', function() {
 
           done();
         });
+      });
+
+      it('should return the new value given the right data path (sync)', function(done) {
+        storage.setDataPath(this.newDataPath);
+        var data = storage.getSync('foo');
+        chai.expect(data).to.deep.equal({
+          location: 'new'
+        });
+
+        done();
       });
 
       it('should return nothing given the wrong data path', function(done) {
@@ -256,6 +302,25 @@ describe('Electron JSON Storage', function() {
           storage.clear,
           function(callback) {
             storage.get('foo', callback);
+          }
+        ], function(error, data) {
+          chai.expect(error).to.not.exist;
+          chai.expect(data).to.deep.equal({});
+          done();
+        });
+      });
+
+      it('should return nothing given the wrong data path (sync)', function(done) {
+        if (os.platform() === 'win32') {
+          storage.setDataPath('C:\\tmp\\electron-json-storage');
+        } else {
+          storage.setDataPath('/tmp/electron-json-storage');
+        }
+
+        async.waterfall([
+          storage.clear,
+          function(callback) {
+            callback(null, storage.getSync('foo'));
           }
         ], function(error, data) {
           chai.expect(error).to.not.exist;
@@ -301,6 +366,12 @@ describe('Electron JSON Storage', function() {
         });
       });
 
+      it('should yield the data (sync)', function(done) {
+        var data = storage.getSync('foo');
+        chai.expect(data).to.deep.equal({ data: 'hello world' });
+        done();
+      });
+
       it('should yield the data if explicitly passing the extension', function(done) {
         storage.get('foo.json', function(error, data) {
           chai.expect(error).to.not.exist;
@@ -309,12 +380,24 @@ describe('Electron JSON Storage', function() {
         });
       });
 
+      it('should yield the data if explicitly passing the extension (sync)', function(done) {
+        var data = storage.getSync('foo.json');
+        chai.expect(data).to.deep.equal({ data: 'hello world' });
+        done();
+      });
+
       it('should yield an empty object given an incorrect key', function(done) {
         storage.get('foobarbaz', function(error, data) {
           chai.expect(error).to.not.exist;
           chai.expect(data).to.deep.equal({});
           done();
         });
+      });
+
+      it('should yield an empty object given an incorrect key (sync)', function(done) {
+        var data = storage.getSync('foobarbaz');
+        chai.expect(data).to.deep.equal({});
+        done();
       });
 
     });
@@ -340,6 +423,13 @@ describe('Electron JSON Storage', function() {
         });
       });
 
+      it('should yield an error (sync)', function(done) {
+        chai.expect(() => {
+          return storage.getSync('foo');
+        }).to.throw('Invalid data: Foo{bar}123');
+        done();
+      });
+
     });
 
     describe('given a non-existent user data path', function() {
@@ -363,6 +453,12 @@ describe('Electron JSON Storage', function() {
           chai.expect(result).to.deep.equal({});
           done();
         });
+      });
+
+      it('should return an empty object for any key (sync)', function(done) {
+        var result = storage.getSync('foo');
+        chai.expect(result).to.deep.equal({});
+        done();
       });
 
     });
