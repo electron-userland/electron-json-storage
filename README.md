@@ -8,7 +8,7 @@ electron-json-storage
 [![Build Status](https://travis-ci.org/electron-userland/electron-json-storage.svg?branch=master)](https://travis-ci.org/electron-userland/electron-json-storage)
 [![Build status](https://ci.appveyor.com/api/projects/status/ulwk1nnh7l8209xg/branch/master?svg=true)](https://ci.appveyor.com/project/electron-userland/electron-json-storage/branch/master)
 
-[Electron](http://electron.atom.io) lacks an easy way to persist and read user settings for your application. `electron-json-storage` implements an API somehow similar to [localStorage](https://developer.mozilla.org/en/docs/Web/API/Window/localStorage) to write and read JSON objects to/from the operating system application data directory, as defined by `app.getPath('userData')`.
+[Electron](http://electron.atom.io) lacks an easy way to persist and read user settings for your application. `electron-json-storage` implements an API somewhat similar to [localStorage](https://developer.mozilla.org/en/docs/Web/API/Window/localStorage) to write and read JSON objects to/from the operating system application data directory, as defined by `app.getPath('userData')`.
 
 Related modules:
 
@@ -35,7 +35,7 @@ When loaded in renderer processes, this module will try to make use of
 
 Electron 10 now [defaults `enableRemoteModule` to
 false](https://www.electronjs.org/docs/breaking-changes#default-changed-enableremotemodule-defaults-to-false),
-which means that `electron-json-storage` will not be able to calculate a data path by default.
+which means that `electron-json-storage` will be able to calculate a data path by default.
 
 The solution is to manually call `storage.setDataPath()` before reading or
 writing any values or setting `enableRemoteModule` to `true`.
@@ -49,6 +49,7 @@ Documentation
     * [.setDataPath(directory)](#module_storage.setDataPath)
     * [.getDataPath()](#module_storage.getDataPath) ⇒ <code>String</code>
     * [.get(key, [options], callback)](#module_storage.get)
+    * [.getSync(key, [options])](#module_storage.getSync)
     * [.getMany(keys, [options], callback)](#module_storage.getMany)
     * [.getAll([options], callback)](#module_storage.getAll)
     * [.set(key, json, [options], callback)](#module_storage.set)
@@ -141,6 +142,28 @@ storage.get('foobar', function(error, data) {
 
   console.log(data);
 });
+```
+<a name="module_storage.getSync"></a>
+
+### storage.getSync(key, [options])
+See `.get()`.
+
+**Kind**: static method of [<code>storage</code>](#module_storage)  
+**Summary**: Read user data (sync)  
+**Access**: public  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| key | <code>String</code> | key |
+| [options] | <code>Object</code> | options |
+| [options.dataPath] | <code>String</code> | data path |
+
+**Example**  
+```js
+const storage = require('electron-json-storage');
+
+var data = storage.getSync('foobar');
+console.log(data);
 ```
 <a name="module_storage.getMany"></a>
 
