@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.0] - 2021-04-13
+
+- Add a `.getSync()` function
+
 ## [4.4.0] - 2021-02-22
 
 - Gracefully require the user to call `.setDataPath()` if the `remote` module
@@ -207,6 +211,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix error when requiring this module from the renderer process.
 
+[4.5.0]: https://github.com/electron-userland/electron-json-storage/compare/v4.4.0...v4.5.0
 [4.4.0]: https://github.com/electron-userland/electron-json-storage/compare/v4.3.0...v4.4.0
 [4.3.0]: https://github.com/electron-userland/electron-json-storage/compare/v4.2.0...v4.3.0
 [4.2.0]: https://github.com/electron-userland/electron-json-storage/compare/v4.1.8...v4.2.0
