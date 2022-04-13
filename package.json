@@ -35,7 +35,7 @@
     "tmp": "0.0.31"
   },
   "dependencies": {
-    "async": "^2.0.0",
+    "async": "^3.2.2",
     "lockfile": "^1.0.4",
     "lodash": "^4.0.1",
     "mkdirp": "^0.5.1",
