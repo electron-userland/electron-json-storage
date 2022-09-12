@@ -1,0 +1,3 @@
+vendorpull https://github.com/jviotti/vendorpull 8445d0d0b15d308906ee395cc3313cba461865c4
+lockfile https://github.com/npm/lockfile 94ef64505c07ec7cfb0b6860e61f1c2d820c4a06
+signal-exit https://github.com/tapjs/signal-exit d4adbebea89cee95da197e9e94f32b3d685b4c80

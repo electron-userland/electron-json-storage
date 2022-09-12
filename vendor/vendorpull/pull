@@ -1,0 +1,251 @@
+#!/bin/sh
+
+set -o errexit
+PATTERN="$1"
+set -o nounset
+
+# @params [string] Error message
+vendorpull_fail() {
+  echo "ERROR: $1" 1>&2
+  exit 1
+}
+
+# @params [string] File path
+# @params [string] Error message
+vendorpull_assert_defined() {
+  if [ -z "$1" ]
+  then
+    vendorpull_fail "$2"
+  fi
+}
+
+# @params [string] Command
+vendorpull_assert_command() {
+  if ! command -v "$1" > /dev/null
+  then
+    vendorpull_fail "You must install $1 in order to use this tool"
+  fi
+}
+
+# @params [string] File path
+vendorpull_assert_file() {
+  if [ ! -f "$1" ]
+  then
+    vendorpull_fail "No such file: $1"
+  fi
+}
+TEMPORARY_DIRECTORY="$(mktemp -d -t vendorpull-clone-XXXXX)"
+echo "Setting up temporary directory at $TEMPORARY_DIRECTORY..."
+temporary_directory_clean() {
+  rm -rf "$TEMPORARY_DIRECTORY"
+}
+trap temporary_directory_clean EXIT
+# Check if a URL is a git URL
+# @params [string] URL
+vendorpull_is_git() {
+  case $1 in
+    # Some heuristics
+    "git@"*) return 0 ;;
+    *".git") return 0 ;;
+    *)
+      # The brute-force approach
+      git clone --depth 1 "$1" "$TEMPORARY_DIRECTORY/git-test" 2> /dev/null \
+        && EXIT_CODE="$?" || EXIT_CODE="$?"
+      rm -rf "$TEMPORARY_DIRECTORY/git-test"
+      test "$EXIT_CODE" != "0" && return 1
+      return 0 ;;
+  esac
+}
+
+# Clone a git repository
+# @params [string] Git URL
+# @params [string] Clone location
+# @params [string] Revision
+vendorpull_clone_git() {
+  git clone --recurse-submodules --jobs 8 "$1" "$2"
+  if [ "$3" != "HEAD" ]
+  then
+    git -C "$2" reset --hard "$3"
+  fi
+}
+
+# Un-git the repository and its dependencies (if any)
+# @params [string] Repository directory
+vendorpull_clean_git() {
+  GIT_FILES=".git .gitignore .github .gitmodules"
+  git -C "$1" submodule foreach "rm -rf $GIT_FILES"
+  for file in $GIT_FILES
+  do
+    rm -rf "$1/${file:?}"
+  done
+}
+
+# @params [string] Repository directory
+# @params [string] Patch file
+vendorpull_patch_git() {
+  git -C "$1" apply --3way "$2"
+}
+# Download a file over HTTP
+# @params [string] HTTP URL
+# @params [string] Download location
+vendorpull_clone_http() {
+  curl --location --retry 5 --output "$2" "$1"
+}
+
+# Validate a file against its MD5 checksum
+# @params [string] File path
+# @params [string] MD5 hash
+vendorpull_clone_checksum() {
+  md5sum "$1"
+  NAME="$(basename "$1")"
+  # This has to be two spaces to match md5sum(1)
+  echo "$REVISION  $NAME" > "$TEMPORARY_DIRECTORY/$NAME.md5"
+  cd "$(dirname "$1")"
+  md5sum --check "$TEMPORARY_DIRECTORY/$NAME.md5"
+  cd - > /dev/null
+}
+# Mask a directory with a set of patterns
+# @params [string] Input directory
+# @params [string] Mask file
+vendorpull_mask_directory() {
+  if [ -f "$2" ]
+  then
+    while read -r pattern
+    do
+      echo "Applying mask on $1: $pattern" 1>&2
+      rm -vrf "${1:?}/${pattern:?}"
+    done < "$2"
+  fi
+}
+# Apply a set of patches to a base directory
+# @params [string] Base directory
+# @params [string] Patches directory
+vendorpull_patch() {
+  if [ -d "$2" ]
+  then
+    for patch in "$2"/*.patch
+    do
+      echo "Applying patch $patch..."
+      vendorpull_patch_git "$1" "$patch"
+    done
+  fi
+}
+# @params [string] Dependency definition
+vendorpull_dependencies_name() {
+  RESULT="$(echo "$1" | cut -d ' ' -f 1)"
+  vendorpull_assert_defined "$RESULT" "Missing dependency name"
+  echo "$RESULT"
+}
+
+# @params [string] Dependency definition
+vendorpull_dependencies_repository() {
+  RESULT="$(echo "$1" | cut -d ' ' -f 2)"
+  vendorpull_assert_defined "$RESULT" "Missing dependency url"
+  echo "$RESULT"
+}
+
+# @params [string] Dependency definition
+vendorpull_dependencies_revision() {
+  RESULT="$(echo "$1" | cut -d ' ' -f 3)"
+  vendorpull_assert_defined "$RESULT" "Missing dependency revision"
+  echo "$RESULT"
+}
+
+# @params [string] Path to DEPENDENCIES file
+# @params [string] Pattern
+vendorpull_dependencies_find() {
+  if [ ! -f "$1" ]
+  then
+    echo ""
+  else
+    grep "^$2" < "$1" | head -n 1
+  fi
+}
+
+# @params [string] Path to DEPENDENCIES file
+# @params [string] Pattern
+vendorpull_dependencies_safe_find() {
+  DEFINITION="$(vendorpull_dependencies_find "$1" "$2")"
+  vendorpull_assert_defined "$DEFINITION" "Could not find a dependency $2 in $1"
+  echo "$DEFINITION"
+}
+
+# @params [string] Path to DEPENDENCIES file
+# @params [string] Dependency name
+vendorpull_dependencies_find_exact() {
+  if [ ! -f "$1" ]
+  then
+    echo ""
+  else
+    grep "^$2 " < "$1" | head -n 1
+  fi
+}
+
+# @params [string] Path to DEPENDENCIES file
+# @params [string] Dependency name
+# @params [string] Dependency url
+# @params [string] Dependency revision
+vendorpull_dependency_set() {
+  DEPENDENCY="$(vendorpull_dependencies_find_exact "$1" "$2")"
+  if [ -z "$DEPENDENCY" ]
+  then
+    echo "$2 $3 $4" >> "$1"
+  else
+    # Use a delimiter other than the slash
+    # in case the dependency name contains one
+    if [ "$(uname)" = "Darwin" ]
+    then
+      sed -i .bak "s|^$2 .*|$2 $3 $4|" "$1"
+      rm "$1.bak"
+    else
+      sed -i "s|^$2 .*|$2 $3 $4|" "$1"
+    fi
+  fi
+}
+
+# @params [string] Base directory
+# @params [string] Dependency definition
+vendorpull_command_pull() {
+  NAME="$(vendorpull_dependencies_name "$2")"
+  URL="$(vendorpull_dependencies_repository "$2")"
+  REVISION="$(vendorpull_dependencies_revision "$2")"
+
+  echo "Updating $NAME..."
+  DOWNLOAD_LOCATION="$TEMPORARY_DIRECTORY/$NAME"
+
+  if vendorpull_is_git "$URL"
+  then
+    vendorpull_clone_git "$URL" "$DOWNLOAD_LOCATION" "$REVISION"
+    vendorpull_patch "$DOWNLOAD_LOCATION" "$1/patches/$NAME"
+    vendorpull_clean_git "$DOWNLOAD_LOCATION"
+    vendorpull_mask_directory "$DOWNLOAD_LOCATION" "$1/vendor/$NAME.mask"
+  else
+    vendorpull_clone_http "$URL" "$DOWNLOAD_LOCATION"
+    vendorpull_clone_checksum "$DOWNLOAD_LOCATION" "$REVISION"
+  fi
+
+  # Atomically move the new dependency into the vendor directory
+  OUTPUT_DIRECTORY="$1/vendor/$NAME"
+  rm -rf "$OUTPUT_DIRECTORY"
+  mkdir -p "$(dirname "$OUTPUT_DIRECTORY")"
+  mv "$DOWNLOAD_LOCATION" "$OUTPUT_DIRECTORY"
+}
+
+vendorpull_assert_command 'git'
+
+# Get the root directory of the current git repository
+BASE_DIRECTORY="$(git rev-parse --show-toplevel)"
+DEPENDENCIES_FILE="$BASE_DIRECTORY/DEPENDENCIES"
+vendorpull_assert_file "$DEPENDENCIES_FILE"
+
+if [ -n "$PATTERN" ]
+then
+  DEFINITION="$(vendorpull_dependencies_safe_find "$DEPENDENCIES_FILE" "$PATTERN")"
+  vendorpull_command_pull "$BASE_DIRECTORY" "$DEFINITION"
+else
+  echo "Reading DEPENDENCIES files..."
+  while read -r dependency
+  do
+    vendorpull_command_pull "$BASE_DIRECTORY" "$dependency"
+  done < "$DEPENDENCIES_FILE"
+fi

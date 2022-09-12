@@ -1,0 +1,26 @@
+From 27905243d1f571c766f0a2c59d545d52b53e5467 Mon Sep 17 00:00:00 2001
+From: Juan Cruz Viotti <jv@jviotti.com>
+Date: Mon, 12 Sep 2022 09:27:48 -0400
+Subject: [PATCH] Use vendored signal-exit
+
+Signed-off-by: Juan Cruz Viotti <jv@jviotti.com>
+---
+ lockfile.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lockfile.js b/lockfile.js
+index f037bec..81e9ee8 100644
+--- a/lockfile.js
++++ b/lockfile.js
+@@ -30,7 +30,7 @@ function hasOwnProperty (obj, prop) {
+   return Object.prototype.hasOwnProperty.call(obj, prop)
+ }
+ 
+-var onExit = require('signal-exit')
++var onExit = require('../signal-exit')
+ onExit(function () {
+   debug('exit listener')
+   // cleanup
+-- 
+2.37.3
+

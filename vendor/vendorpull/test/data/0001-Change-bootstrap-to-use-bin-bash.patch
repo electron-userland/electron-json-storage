@@ -1,0 +1,23 @@
+From 9072ad434e070b53b18d8d3e8566f813c0da83ea Mon Sep 17 00:00:00 2001
+From: Juan Cruz Viotti <jv@jviotti.com>
+Date: Tue, 22 Jun 2021 22:57:20 -0400
+Subject: [PATCH] Change bootstrap to use /bin/bash
+
+Signed-off-by: Juan Cruz Viotti <jv@jviotti.com>
+---
+ bootstrap | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/bootstrap b/bootstrap
+index 472eb26..d3b439e 100755
+--- a/bootstrap
++++ b/bootstrap
+@@ -1,4 +1,4 @@
+-#!/bin/sh
++#!/bin/bash
+ 
+ set -o errexit
+ REVISION="$VENDORPULL_REVISION"
+-- 
+2.31.1
+
