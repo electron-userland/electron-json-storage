@@ -726,12 +726,26 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should yield an error if no key (sync)', function(done) {
+      chai.expect(() => {
+        storage.setSync(null, { foo: 'bar' });
+      }).to.throw('Missing key');
+      done();
+    });
+
     it('should yield an error if key is not a string', function(done) {
       storage.set(123, { foo: 'bar' }, function(error) {
         chai.expect(error).to.be.an.instanceof(Error);
         chai.expect(error.message).to.equal('Invalid key');
         done();
       });
+    });
+
+    it('should yield an error if key is not a string (sync)', function(done) {
+      chai.expect(() => {
+        storage.setSync(123, { foo: 'bar' });
+      }).to.throw('Invalid key');
+      done();
     });
 
     it('should yield an error if key is a blank string', function(done) {
@@ -742,12 +756,26 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should yield an error if key is a blank string (sync)', function(done) {
+      chai.expect(() => {
+        storage.setSync('     ', { foo: 'bar' });
+      }).to.throw('Invalid key');
+      done();
+    });
+
     it('should yield an error if data is not a valid JSON object', function(done) {
       storage.set('foo', _.noop, function(error) {
         chai.expect(error).to.be.an.instanceof(Error);
         chai.expect(error.message).to.equal('Invalid JSON data');
         done();
       });
+    });
+
+    it('should yield an error if data is not a valid JSON object (sync)', function(done) {
+      chai.expect(() => {
+        storage.setSync('foo', _.noop);
+      }).to.throw('Invalid JSON data');
+      done();
     });
 
     it('should be able to store a valid JSON object in a file with a colon', function(done) {
@@ -765,6 +793,22 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should be able to store a valid JSON object in a file with a colon (sync)', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.setSync('test:value', { foo: 'bar' });
+          callback();
+        },
+        function(callback) {
+         callback(null, storage.getSync('test:value'));
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'bar' });
+        done();
+      });
+    });
+
     it('should be able to store a valid JSON object', function(done) {
       async.waterfall([
         function(callback) {
@@ -772,6 +816,22 @@ describe('Electron JSON Storage', function() {
         },
         function(callback) {
           storage.get('foo', callback);
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'baz' });
+        done();
+      });
+    });
+
+    it('should be able to store a valid JSON object (sync)', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.setSync('foo', { foo: 'baz' });
+          callback();
+        },
+        function(callback) {
+          callback(null, storage.getSync('foo'));
         }
       ], function(error, data) {
         chai.expect(error).to.not.exist;
@@ -797,6 +857,24 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should minify JSON documents by default (sync)', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.setSync('foo', { foo: 'baz' });
+          callback();
+        },
+        function(callback) {
+         callback(null, fs.readFileSync(utils.getFileName('foo'), {
+            encoding: 'utf8'
+          }));
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal("{\"foo\":\"baz\"}");
+        done();
+      });
+    });
+
     it('should minify JSON documents when setting prettyPrinting=false', function(done) {
       async.waterfall([
         function(callback) {
@@ -806,6 +884,24 @@ describe('Electron JSON Storage', function() {
           fs.readFile(utils.getFileName('foo'), {
             encoding: 'utf8'
           }, callback);
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal("{\"foo\":\"baz\"}");
+        done();
+      });
+    });
+
+    it('should minify JSON documents when setting prettyPrinting=false (sync)', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.setSync('foo', { foo: 'baz' }, { prettyPrinting: false });
+          callback();
+        },
+        function(callback) {
+          callback(null, fs.readFileSync(utils.getFileName('foo'), {
+            encoding: 'utf8'
+          }));
         }
       ], function(error, data) {
         chai.expect(error).to.not.exist;
@@ -831,6 +927,24 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should not minify JSON documents when setting prettyPrinting=true (sync)', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.setSync('foo', { foo: 'baz' }, { prettyPrinting: true });
+          callback();
+        },
+        function(callback) {
+          callback(null, fs.readFileSync(utils.getFileName('foo'), {
+            encoding: 'utf8'
+          }));
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal("{\n  \"foo\": \"baz\"\n}");
+        done();
+      });
+    });
+
     it('should be able to store a valid JSON pretty-printed object', function(done) {
       async.waterfall([
         function(callback) {
@@ -846,6 +960,22 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should be able to store a valid JSON pretty-printed object (sync)', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.setSync('foo', { foo: 'baz' }, { prettyPrinting: true });
+          callback();
+        },
+        function(callback) {
+          callback(null, storage.getSync('foo'));
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'baz' });
+        done();
+      });
+    });
+
     it('should be able to store a valid JSON object using validate=true', function(done) {
       async.waterfall([
         function(callback) {
@@ -853,6 +983,22 @@ describe('Electron JSON Storage', function() {
         },
         function(callback) {
           storage.get('foo', callback);
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'baz' });
+        done();
+      });
+    });
+
+    it('should be able to store a valid JSON object using validate=true (sync)', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.setSync('foo', { foo: 'baz' }, { validate: true });
+          callback();
+        },
+        function(callback) {
+          callback(null, storage.getSync('foo'));
         }
       ], function(error, data) {
         chai.expect(error).to.not.exist;
@@ -890,6 +1036,36 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should be able to store an object to a custom location (sync)', function(done) {
+      const newDataPath = os.tmpdir();
+
+      async.waterfall([
+        function(callback) {
+          storage.setSync('foo', { foo: 'baz' }, {
+            dataPath: newDataPath
+          });
+          callback();
+        },
+        function(callback) {
+          async.parallel({
+            newDataPath: function(callback) {
+              callback(null, storage.getSync('foo', {
+                dataPath: newDataPath
+              }));
+            },
+            oldDataPath: function(callback) {
+              callback(null, storage.getSync('foo'));
+            }
+          }, callback);
+        }
+      ], function(error, results) {
+        chai.expect(error).to.not.exist;
+        chai.expect(results.newDataPath).to.deep.equal({ foo: 'baz' });
+        chai.expect(results.oldDataPath).to.deep.equal({});
+        done();
+      });
+    });
+
     it('should ignore an explicit json extension', function(done) {
       async.waterfall([
         function(callback) {
@@ -897,6 +1073,22 @@ describe('Electron JSON Storage', function() {
         },
         function(callback) {
           storage.get('foo', callback);
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'baz' });
+        done();
+      });
+    });
+
+    it('should ignore an explicit json extension (sync)', function(done) {
+      async.waterfall([
+        function(callback) {
+          storage.setSync('foo.json', { foo: 'baz' });
+          callback();
+        },
+        function(callback) {
+          callback(null, storage.getSync('foo'));
         }
       ], function(error, data) {
         chai.expect(error).to.not.exist;
@@ -921,6 +1113,23 @@ describe('Electron JSON Storage', function() {
       });
     });
 
+    it('should accept special characters as the key name (sync)', function(done) {
+      const key = 'foo?bar:baz';
+      async.waterfall([
+        function(callback) {
+         storage.setSync(key, { foo: 'baz' });
+         callback();
+        },
+        function(callback) {
+          callback(null, storage.getSync(key));
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'baz' });
+        done();
+      });
+    });
+
     it('should accept spaces in the key name', function(done){
         const key = 'foo bar baz';
         async.waterfall([
@@ -936,6 +1145,24 @@ describe('Electron JSON Storage', function() {
           done();
         });
     });
+
+    it('should accept spaces in the key name (sync)', function(done){
+      const key = 'foo bar baz';
+      async.waterfall([
+        function(callback) {
+          storage.setSync(key, { foo: 'baz' });
+          callback();
+        },
+        function(callback) {
+          callback(null, storage.getSync(key));
+        }
+      ], function(error, data) {
+        chai.expect(error).to.not.exist;
+        chai.expect(data).to.deep.equal({ foo: 'baz' });
+        done();
+      });
+  });
+
 
     describe('given an existing stored key', function() {
 
