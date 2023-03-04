@@ -1770,4 +1770,362 @@ describe('Electron JSON Storage', function() {
 
   });
 
+  describe('promises.has()', function() {
+    it('should yield an error if no key', function(done) {
+      storage.promises.has(null)
+        .then(() => { throw new Error('should not have worked'); })
+        .catch((error) => {
+          chai.expect(error).to.be.an.instanceof(Error);
+          chai.expect(error.message).to.equal('Missing key');
+        })
+        .finally((hasKey) => {
+          chai.expect(hasKey).to.not.exist;
+          done();
+        });
+    });
+
+    it('should yield an error if key is not a string', function(done) {
+      storage.promises.has(123)
+        .then(() => { throw new Error('should not have worked'); })
+        .catch((error) => {
+          chai.expect(error).to.be.an.instanceof(Error);
+          chai.expect(error.message).to.equal('Invalid key');
+        })
+        .finally((hasKey) => {
+          chai.expect(hasKey).to.not.exist;
+          done();
+        });
+    });
+
+    it('should yield an error if key is a blank string', function(done) {
+      storage.promises.has('    ')
+        .then(() => { throw new Error('should not have worked'); })
+        .catch((error) => {
+          chai.expect(error).to.be.an.instanceof(Error);
+          chai.expect(error.message).to.equal('Invalid key');
+        })
+        .finally((hasKey) => {
+          chai.expect(hasKey).to.not.exist;
+          done();
+        });
+    });
+
+    describe('given a stored key in a custom location', function() {
+      beforeEach(function(done) {
+        this.dataPath = os.tmpdir();
+        storage.set('foo', { foo: 'bar' }, {
+          dataPath: this.dataPath
+        }, done);
+      });
+
+      it('should yield false given the default data path', async function() {
+        const hasKey = await storage.promises.has('foo');
+        chai.expect(hasKey).to.equal(false);
+      });
+
+      it('should yield true given the custom data path', async function() {
+        const hasKey = await storage.promises.has('foo', {
+          dataPath: this.dataPath
+        });
+        chai.expect(hasKey).to.equal(true);
+      });
+    });
+
+    describe('given a stored key', function() {
+      beforeEach(function(done) {
+        storage.set('foo', { foo: 'bar' }, done);
+      });
+
+      it('should yield true if the key exists', async function() {
+        const hasKey = await storage.promises.has('foo');
+        chai.expect(hasKey).to.equal(true);
+      });
+
+      it('should yield true if the key has a json extension', async function() {
+        const hasKey = await storage.promises.has('foo.json');
+        chai.expect(hasKey).to.equal(true);
+      });
+
+      it('should yield false if the key does not exist', async function() {
+        const hasKey = await storage.promises.has('hello');
+        chai.expect(hasKey).to.equal(false);
+      });
+    });
+  });
+
+  describe('promises.get()', function() {
+    it('should yield an error if no key', function(done) {
+      storage.promises.get(null)
+        .then(() => { throw new Error('should not have worked'); })
+        .catch((error) => {
+          chai.expect(error).to.be.an.instanceof(Error);
+          chai.expect(error.message).to.equal('Missing key');
+        })
+        .finally((data) => {
+          chai.expect(data).to.not.exist;
+          done();
+        });
+    });
+
+    it('should yield an error if key is not a string', function(done) {
+      storage.promises.get(123)
+        .then(() => { throw new Error('should not have worked'); })
+        .catch((error) => {
+          chai.expect(error).to.be.an.instanceof(Error);
+          chai.expect(error.message).to.equal('Invalid key');
+        })
+        .finally((data) => {
+          chai.expect(data).to.not.exist;
+          done();
+        });
+    });
+
+    it('should yield an error if key is a blank string', function(done) {
+      storage.promises.get('    ')
+        .then(() => { throw new Error('should not have worked'); })
+        .catch((error) => {
+          chai.expect(error).to.be.an.instanceof(Error);
+          chai.expect(error.message).to.equal('Invalid key');
+        })
+        .finally((data) => {
+          chai.expect(data).to.not.exist;
+          done();
+        });
+    });
+
+    describe('given the user data path does not exist', function() {
+      beforeEach(function(done) {
+        rimraf(storage.getDataPath(), done);
+      });
+
+      afterEach(function(done) {
+        mkdirp(storage.getDataPath(), done);
+      });
+
+      it('should return an empty object for any key', async function() {
+        const data = await storage.promises.get('foobarbaz');
+        chai.expect(data).to.deep.equal({});
+      });
+    });
+
+    describe('given the same key stored in multiple data paths', function() {
+      beforeEach(function(done) {
+        this.newDataPath = path.join(os.tmpdir(), 'electron-json-storage');
+        const self = this;
+
+        async.waterfall([
+          function(callback) {
+            storage.setDataPath(self.newDataPath);
+            callback();
+          },
+          function(callback) {
+            storage.set('foo', { location: 'new' }, callback);
+          },
+          function(callback) {
+            storage.setDataPath(utils.getDefaultDataPath());
+            callback();
+          },
+          function(callback) {
+            storage.set('foo', { location: 'default' }, callback);
+          }
+        ], done);
+      });
+
+      it('should initially return the key in the default location', async function() {
+        const data = await storage.promises.get('foo');
+        chai.expect(data).to.deep.equal({
+          location: 'default'
+        });
+      });
+
+      it('should return the new value given the right data path', async function() {
+        storage.setDataPath(this.newDataPath);
+        const data = await storage.promises.get('foo');
+        chai.expect(data).to.deep.equal({
+          location: 'new'
+        });
+      });
+
+      it('should return nothing given the wrong data path', async function() {
+        if (os.platform() === 'win32') {
+          storage.setDataPath('C:\\tmp\\electron-json-storage');
+        } else {
+          storage.setDataPath('/tmp/electron-json-storage');
+        }
+
+        await storage.promises.clear();
+        const data = await storage.promises.get('foo');
+        chai.expect(data).to.deep.equal({});
+      });
+    });
+
+    describe('given stored settings', function() {
+      beforeEach(function(done) {
+        storage.set('foo', { data: 'hello world' }, done);
+      });
+
+      it('should yield the data', async function() {
+        const data = await storage.promises.get('foo');
+        chai.expect(data).to.deep.equal({ data: 'hello world' });
+      });
+
+      it('should yield the data if explicitly passing the extension', async function() {
+        const data = await storage.promises.get('foo.json');
+        chai.expect(data).to.deep.equal({ data: 'hello world' });
+      });
+
+      it('should yield an empty object given an incorrect key', async function() {
+        const data = await storage.promises.get('foobarbaz');
+        chai.expect(data).to.deep.equal({});
+      });
+    });
+
+    describe('given invalid stored JSON', function() {
+      beforeEach(function(done) {
+        const fileName = utils.getFileName('foo');
+
+        // Using fs directly since storage.set()
+        // contains logic to prevent invalid JSON
+        // from being written at all
+        return fs.writeFile(fileName, 'Foo{bar}123', done);
+      });
+
+      it('should yield an error', function(done) {
+        storage.promises.get('foo')
+          .then(() => { throw new Error('should not have worked'); })
+          .catch((error) => {
+            chai.expect(error).to.be.an.instanceof(Error);
+            chai.expect(error.message).to.equal('Invalid data: Foo{bar}123');
+          })
+          .finally((data) => {
+            chai.expect(data).to.not.exist;
+            done();
+          });
+      });
+    });
+
+    describe('given a non-existent user data path', function() {
+      beforeEach(function() {
+        this.oldUserData = app.getPath('userData');
+        app.setPath('userData', tmp.tmpNameSync());
+      });
+
+      afterEach(function() {
+        app.setPath('userData', this.oldUserData);
+      });
+
+      it('should return an empty object for any key', async function() {
+        const data = await storage.promises.get('foo');
+        chai.expect(data).to.deep.equal({});
+      });
+    });
+  });
+
+  describe('promises.clear()', function() {
+    it('should not yield an error if no keys', async function() {
+      await storage.promises.clear();
+    });
+
+    describe('given a stored key in a custom location', function() {
+      beforeEach(function(done) {
+        this.dataPath = os.tmpdir();
+        storage.set('foo', { foo: 'bar' }, { dataPath: this.dataPath }, done);
+      });
+
+      it('should clear the key', async function() {
+        var options = {
+          dataPath: this.dataPath
+        };
+
+        let hasKey = await storage.promises.has('foo', options);
+        chai.expect(hasKey).to.be.true;
+        await storage.promises.clear(options);
+        hasKey = await storage.promises.has('foo', options);
+        chai.expect(hasKey).to.be.false;
+      });
+    });
+
+    describe('given a stored key', function() {
+      beforeEach(function(done) {
+        storage.set('foo', { foo: 'bar' }, done);
+      });
+
+      it('should clear the key', async function() {
+        let hasKey = await storage.promises.has('foo');
+        chai.expect(hasKey).to.be.true;
+        await storage.promises.clear();
+        hasKey = await storage.promises.has('foo');
+        chai.expect(hasKey).to.be.false;
+      });
+
+      it('should not delete the user data storage directory', async function() {
+        const isDirectory = async function(dir) {
+          try {
+            const stat = await fs.promises.stat(dir);
+            return stat.isDirectory();
+          } catch (error) {
+            if (error.code === 'ENOENT') {
+              return false;
+            }
+            throw error;
+          }
+        };
+
+        const userDataPath = storage.getDataPath();
+
+        let isDir = await isDirectory(userDataPath);
+        chai.expect(isDir).to.be.true;
+        await storage.promises.clear();
+        isDir = await isDirectory(userDataPath);
+        chai.expect(isDir).to.be.true;
+      });
+
+      it('should not delete other files inside the user data directory', async function() {
+        const userDataPath = app.getPath('userData');
+
+        await Promise.all([
+          fs.promises.writeFile(path.join(userDataPath, 'foo'), 'foo'),
+          fs.promises.writeFile(path.join(userDataPath, 'bar'), 'bar.json')
+        ]);
+        await storage.promises.clear();
+        const results = await Promise.all([
+          fs.promises.readFile(path.join(userDataPath, 'foo'), 'utf8'),
+          fs.promises.readFile(path.join(userDataPath, 'bar'), 'utf8')
+        ]);
+        chai.expect(results).to.deep.equal([ 'foo', 'bar.json' ]);
+      });
+
+    });
+
+    describe('given many stored keys', function() {
+      beforeEach(function(done) {
+        async.parallel([
+          _.partial(storage.set, 'foo', { name: 'foo' }),
+          _.partial(storage.set, 'bar', { name: 'bar' }),
+          _.partial(storage.set, 'baz', { name: 'baz' })
+        ], done);
+      });
+
+      it('should clear all stored keys', async function() {
+        let has = await Promise.all([
+          storage.promises.has('foo'),
+          storage.promises.has('bar'),
+          storage.promises.has('baz'),
+        ]);
+        chai.expect(has[0]).to.be.true;
+        chai.expect(has[1]).to.be.true;
+        chai.expect(has[2]).to.be.true;
+
+        await storage.promises.clear();
+        has = await Promise.all([
+          storage.promises.has('foo'),
+          storage.promises.has('bar'),
+          storage.promises.has('baz'),
+        ]);
+        chai.expect(has[0]).to.be.false;
+        chai.expect(has[1]).to.be.false;
+        chai.expect(has[2]).to.be.false;
+      });
+    });
+  });
 });
