@@ -35,7 +35,7 @@ When loaded in renderer processes, this module will try to make use of
 
 Electron 10 now [defaults `enableRemoteModule` to
 false](https://www.electronjs.org/docs/breaking-changes#default-changed-enableremotemodule-defaults-to-false),
-which means that `electron-json-storage` will be able to calculate a data path by default.
+which means that `electron-json-storage` will not be able to calculate a data path by default.
 
 The solution is to manually call `storage.setDataPath()` before reading or
 writing any values or setting `enableRemoteModule` to `true`.
